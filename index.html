@@ -331,20 +331,87 @@
     // GAME DATA & LOGIC (V4.0 Unified Reference)
     // ══════════════════════════════════════════════
 
-    const MAX_PORTRAITS = 12; // Adjust this if you have more/fewer portraits per race
+    // 1-indexed arrays (index 1..N). Put null at [0] so it lines up with portraitVariant.
+    const NAME_MAP = {
+      "Human": [
+        null,
+        "Devendrika Ray",           // 1
+        "Kael Ionescu",             // 2
+        "Randy Starkiller",         // 3
+        "Quinn Solemani",           // 4
+        "Tomasz Malik",             // 5
+        "Lucian Vance",             // 6
+        "Rafael Kovacs",            // 7
+        "Elias Moretti",            // 8
+        "Aveline Karim",            // 9
+        "Soren Baptiste",           // 10
+        "Petra Novak",              // 11
+        "Matteo Calder",            // 12
+        "Elara Mendez",             // 13
+        "Nikolai Duarte",           // 14
+        "Adrian Sato",              // 15
+        "Cassian Ward",             // 16
+        "Farid Alami",              // 17
+        "Dario Velasquez",          // 18
+        "Layla Rahman",             // 19
+        "Henrik Solberg",           // 20
+        "Isaac Moreno",             // 21
+        "Iris Bennett",             // 22
+        "Selene Duarte",            // 23
+        "Gordon Lemo",              // 24
+        "Rami Qureshi",             // 25
+        "Andre Baptiste",           // 26
+        "Empress Rosa",             // 27
+        "Camila Torres",            // 28
+        "Lydia Shaw",               // 29
+        "Empress Bianca",           // 30
+        "Theo Grant",               // 31
+        "Lukas Andrade",            // 32
+        "Dominic Hayes",            // 33
+        "Dalo Manimo",              // 34
+        "Hannah Becker",            // 35
+        "Aaron Gallagher",          // 36
+        "Jonas Weber",              // 37
+        "Niklas Berg",              // 38
+        "Ana Velasquez",            // 39
+        "Cassian Moretti",          // 40
+        "Zayed Rahmani",            // 41
+        "Dorian Keane",             // 42
+        "Rafael Duarte",            // 43
+        "Marcus Keane",             // 44
+        "Adrian Malik",             // 45
+        "Victor Calder",            // 46
+        "Henry Vance",              // 47
+        "Daniel Ward",              // 48
+        "Isaac Shaw",               // 49
+        "Grace O’Connell",          // 50
+        "Patrick Hayes",            // 51
+        "Julian Weber"              // 52
+      ],
+      "Beetlegunner": [], // Add 1..44 here when ready
+      "Barbitulian":  [], // Add 1..54 here when ready
+      "Drakhen":      [], // Add 1..23 here when ready
+      "Aquasim":      []  // Add 1..54 here when ready
+    };
+
+    function getNameFor(raceKey, portraitVariant) {
+      const arr = NAME_MAP[raceKey];
+      if (!arr) return null;
+      return arr[portraitVariant] || null;
+    }
 
     const RACES = {
         "Human":        { icon: "images/human_icon.png",        images: 52, str: [8,20], int: [8,20], cha: [8,20], hates: ["Robomantoid", "Drakhen"], desc: "Adaptable. Stats never all equal." },
         "Sky-Elf":      { icon: "images/sky-elf_icon.png",      images: 12, str: [6,16], int: [28,45], cha: [8,18], hates: ["Giant", "Droid", "Beetlegunner", "Fungi"], desc: "INT always highest skill." },
-        "Beetlegunner": { icon: "images/beetlegunner_icon.png", images: 44, str: [22,38], int: [4,12], cha: [4,10], hates: ["Sky-Elf", "Droid", "Fungi"], desc: "STR > CHA always." },
+        "Beetlegunner": { icon: "images/beetlegunner_icon.png", images: 12, str: [22,38], int: [4,12], cha: [4,10], hates: ["Sky-Elf", "Droid", "Fungi"], desc: "STR > CHA always." },
         "Giant":        { icon: "images/giant_icon.png",        images: 12, str: [30,50], int: [3,10], cha: [3,10], hates: ["Giant"], desc: "STR > (INT + CHA) always." },
         "Droid":        { icon: "images/droid_icon.png",        images: 12, str: [15,28], int: [15,28], cha: [2,8], hates: ["Sugorian", "Beetlegunner", "Aquasim"], desc: "Name ends with a Number." },
         "Robomantoid":  { icon: "images/robomantoid_icon.png",  images: 12, str: [28,45], int: [8,18], cha: [5,12], hates: ["Void-Demon", "Sky-Elf", "Sugorian"], desc: "HATE ≥ 20% always." },
-        "Barbitulian":  { icon: "images/barbitulian_icon.png",  images: 54, str: [8,20], int: [18,32], cha: [18,32], hates: ["Robomantoid", "Cheesponge"], desc: "INT must equal CHA." },
+        "Barbitulian":  { icon: "images/barbitulian_icon.png",  images: 12, str: [8,20], int: [18,32], cha: [18,32], hates: ["Robomantoid", "Cheesponge"], desc: "INT must equal CHA." },
         "Space-Cat":    { icon: "images/space-cat_icon.png",    images: 12, str: [8,18], int: [12,26], cha: [28,45], hates: ["Long-Neck", "Sugorian", "Void-Demon"], desc: "CHA always highest skill." },
         "Velkhorian":   { icon: "images/velkhorian_icon.png",   images: 12, str: [18,32], int: [20,34], cha: [22,36], hates: ["Drakhen"], desc: "HATE ≤ 60%. Avian diplomats." },
-        "Drakhen":      { icon: "images/drakhen_icon.png",      images: 23, str: [45,65], int: [45,65], cha: [25,45], hates: ["ALL"], desc: "Pure evil. Best stats. Hates everyone." },
-        "Aquasim":      { icon: "images/aquasim_icon.png",      images: 54, str: [12,28], int: [12,28], cha: [3,10], hates: ["Squid", "Sugorian", "Sodio"], desc: "CHA is always lowest skill." },
+        "Drakhen":      { icon: "images/drakhen_icon.png",      images: 12, str: [45,65], int: [45,65], cha: [25,45], hates: ["ALL"], desc: "Pure evil. Best stats. Hates everyone." },
+        "Aquasim":      { icon: "images/aquasim_icon.png",      images: 12, str: [12,28], int: [12,28], cha: [3,10], hates: ["Squid", "Sugorian", "Sodio"], desc: "CHA is always lowest skill." },
         "Void-Demon":   { icon: "images/void-demon_icon.png",   images: 12, str: [8,20], int: [10,24], cha: [20,35], hates: ["NO ONE"], desc: "CHA > STR always. Pacifists." },
         "Fungi":        { icon: "images/fungi_icon.png",        images: 12, str: [15,28], int: [8,20], cha: [5,15], hates: ["Beetlegunner", "Drakhen", "Aquasim"], desc: "HATE ≥ 80%. Always screaming." },
         "Oak-Person":   { icon: "images/oak-person_icon.png",   images: 12, str: [20,35], int: [15,28], cha: [1,4], hates: ["Drakhen", "Beetlegunner", "Droid", "Robomantoid"], desc: "CHA < 5 always. Slow." },
@@ -381,7 +448,6 @@
         let int = rand(rd.int[0], rd.int[1]);
         let cha = rand(rd.cha[0], rd.cha[1]);
         let hate = rand(0, 100);
-        let name = NAMES[rand(0, NAMES.length - 1)];
 
         // Enforce Biological Traits to not generate Saboteurs by default
         if (raceKey === "Sugorian") hate = rand(0, 50);
@@ -390,7 +456,6 @@
         if (raceKey === "Human") { while (str === int && int === cha) { str++; } }
         if (raceKey === "Beetlegunner") { str = Math.max(str, cha + 1); }
         if (raceKey === "Giant") { str = int + cha + rand(1, 10); }
-        if (raceKey === "Droid") { name += "-" + rand(1, 99); }
         if (raceKey === "Robomantoid") { hate = rand(20, 100); }
         if (raceKey === "Barbitulian") { int = cha; }
         if (raceKey === "Cheesponge" || raceKey === "Aquasim") { str = Math.min(int, cha) - rand(1, 5); if (str < 1) str = 1; }
@@ -407,9 +472,16 @@
         const maxImgs = rd.images || 12;
         const portraitVariant = rand(1, maxImgs);
 
+        // Map Specific Names to Specific Images
+        let mappedName = getNameFor(raceKey, portraitVariant);
+        let finalName = mappedName ? mappedName : NAMES[rand(0, NAMES.length - 1)];
+
+        // Only append numbers to Droids if they don't have a mapped name
+        if (raceKey === "Droid" && !mappedName) { finalName += "-" + rand(1, 99); }
+
         return {
             id: id,
-            name: name,
+            name: finalName,
             race: raceKey,
             str: str, int: int, cha: cha, hate: hate,
             exp: ROLES[rand(0, ROLES.length - 1)],
