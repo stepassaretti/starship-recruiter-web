@@ -1,1011 +1,995 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.7">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Starship Recruiter - Legacy Edition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #e5e5e5;
+            --fg: #000000;
+            --font-main: 'VT323', monospace;
+            --step: 2px;
+            --stroke: 2px;
+            --dither: conic-gradient(#000 0.25turn, transparent 0.25turn 0.5turn, #000 0.5turn 0.75turn, transparent 0.75turn);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        /* ══════════════════════════════════════════════
+           GEOMETRY CORNERS
+        ══════════════════════════════════════════════ */
+        .pixel-notch {
+            clip-path: polygon(
+                0% var(--step), var(--step) var(--step), var(--step) 0%,
+                calc(100% - var(--step)) 0%, calc(100% - var(--step)) var(--step), 100% var(--step),
+                100% calc(100% - var(--step)), calc(100% - var(--step)) calc(100% - var(--step)), calc(100% - var(--step)) 100%,
+                var(--step) 100%, var(--step) calc(100% - var(--step)), 0% calc(100% - var(--step))
+            );
+        }
+
+        .pixel-staircase {
+            clip-path: polygon(
+                0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
+                calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
+                100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
+                4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
+            );
+        }
+
+        /* ══════════════════════════════════════════════
+           LAYOUT (SCALED FOR PREVIEW)
+        ══════════════════════════════════════════════ */
+        .header {
+            border-bottom: 2px solid var(--fg);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            background: #fff;
+            z-index: 100;
+        }
+
+        .header-title { font-size: 24px; font-weight: bold; text-transform: uppercase; letter-spacing: -0.04em; }
+        .header-stats { font-size: 22px; display: flex; gap: 20px; }
+
+        .main-area {
+            flex: 1;
+            display: flex;
+            overflow-x: auto; 
+            overflow-y: hidden;
+        }
+
+        .col {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            border-right: 2px solid var(--fg);
+        }
+        .col-left { width: 240px; flex-shrink: 0; background: #fff; }
+        
+        .col-center { 
+            flex: 1; 
+            min-width: 480px; 
+            position: relative; 
+            background-color: #ffffff;
+            background-image: radial-gradient(circle at 1px 1px, #000 1px, transparent 0);
+            background-size: 20px 20px;
+        } 
+        
+        .col-right { width: 280px; flex-shrink: 0; background: #fff; border-right: none; }
+
+        .section-title { 
+            font-size: 20px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            border-bottom: none; 
+            padding-bottom: 8px; 
+            margin-bottom: 12px; 
+            background-image: linear-gradient(to right, #000 50%, transparent 50%);
+            background-size: 4px 2px;
+            background-position: bottom;
+            background-repeat: repeat-x;
+        }
+
+        /* ══════════════════════════════════════════════
+           COMPONENTS
+        ══════════════════════════════════════════════ */
+        .ui-tag { background: #000; color: #fff; padding: 4px 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; text-transform: uppercase; }
+        .ui-tag.outline { background: #fff; color: #000; border: 2px solid #000; padding: 2px 4px; }
+
+        .mission-card { border: 2px solid var(--fg); padding: 12px; margin-bottom: 20px; background: #fff; }
+        .mission-title { font-size: 22px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; line-height: 1; }
+        .mission-detail { font-size: 18px; margin-top: 8px; }
+
+        .manual-entry { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 2px dotted #000; }
+        .manual-name { font-size: 20px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .manual-desc { font-size: 16px; line-height: 1.1; margin-top: 4px; }
+        .manual-hates { font-size: 16px; margin-top: 4px; }
+
+        /* ══════════════════════════════════════════════
+           CARD STRUCTURE & DRAG PHYSICS (SCALED)
+        ══════════════════════════════════════════════ */
+        .pool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            align-content: start;
+        }
+
+        .card-stack { position: relative; width: 220px; height: auto; margin: 0 auto; }
+        .card-placeholder { width: 100%; height: 100%; border: none; background: transparent; }
+
+        .drag-wrapper { position: relative; width: 100%; height: auto; cursor: grab; z-index: 10; touch-action: none; }
+        .drag-wrapper:active { cursor: grabbing; }
+
+        .card-shadow {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: var(--dither); background-size: 2px 2px;
+            z-index: 1; opacity: 0; pointer-events: none;
+            transition: transform 0.25s cubic-bezier(0.2, 0, 0.3, 1), opacity 0.2s ease-out;
+        }
+
+        .drag-wrapper:hover .card-shadow { opacity: 1; transform: translate(-6px, 6px); }
+        .drag-wrapper.dragging { z-index: 1000; }
+        .drag-wrapper.dragging .card-shadow { opacity: 1; transform: translate(-15px, 15px); transition: none; }
+
+        .card-container {
+            width: 100%; height: auto; background: var(--fg); padding: var(--stroke);
+            position: relative; z-index: 2; transition: transform 0.2s cubic-bezier(0.2, 0, 0.3, 1);
+        }
+        .drag-wrapper:hover .card-container { transform: translateY(-4px); }
+        .drag-wrapper.dragging .card-container { transform: translateY(0); }
+
+        .card-content {
+            width: 100%; height: auto; background: #ffffff; padding: 10px 12px;
+            display: flex; flex-direction: column; gap: 4px; overflow: hidden;
+        }
+        .card-head { display: flex; justify-content: space-between; align-items: center; }
+        .card-name { font-size: 22px; line-height: 0.84; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .avatar-box {
+            width: 100%; height: 100px; background: #ffffff; border: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 48px; margin: 4px 0; flex-shrink: 0; overflow: hidden;
+        }
+
+        .card-div { height: 2px; background-image: linear-gradient(to right, #000 50%, transparent 50%); background-size: 4px 2px; background-repeat: repeat-x; margin: 2px 0; border: none; flex-shrink: 0; }
+
+        .card-skills { font-size: 20px; line-height: 1; display: flex; justify-content: space-between; width: 100%; }
+        .hi-stat { font-weight: bold; }
+        
+        .card-exp { font-size: 20px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+        .card-salary { font-size: 20px; font-weight: bold; line-height: 1; }
+
+        .hate-row { display: flex; align-items: center; gap: 6px; }
+        .hate-lbl { font-size: 20px; line-height: 1; flex-shrink: 0; }
+        .hate-outer { width: 40px; height: 10px; border: 2px solid #000; background: #fff; position: relative; overflow: hidden; }
+        .hate-fill { position: absolute; inset: 0; right: auto; background-image: var(--dither); background-size: 2px 2px; }
+        .hate-pct { font-size: 20px; line-height: 1; }
+
+        /* ══════════════════════════════════════════════
+           SHIP & ROSTER SLOTS
+        ══════════════════════════════════════════════ */
+        .ship-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+        
+        .roster-grid {
+            display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px;
+        }
+
+        .target-slot {
+            width: 100%; height: 48px;
+            display: flex; justify-content: center; align-items: center; position: relative;
+            font-size: 22px; color: #000; text-transform: none;
+            background-image: linear-gradient(to right, #000 50%, transparent 50%), linear-gradient(to bottom, #000 50%, transparent 50%), linear-gradient(to right, #000 50%, transparent 50%), linear-gradient(to bottom, #000 50%, transparent 50%);
+            background-size: 8px 2px, 2px 8px, 8px 2px, 2px 8px;
+            background-position: top, right, bottom, left; background-repeat: repeat-x, repeat-y, repeat-x, repeat-y;
+            transition: background-color 0.2s;
+        }
+        
+        /* Dither overlay active state matching button hover */
+        .target-slot.drag-over { 
+            background-color: #fff !important;
+            background-image: var(--dither) !important;
+            background-size: 2px 2px !important;
+            border: 2px solid #000 !important;
+        }
+
+        .roster-card-mini {
+            width: 100%; height: 100%; background: #000; color: #fff; padding: 8px;
+            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+        }
+        .roster-card-mini:hover { background: #333; }
+        
+        .btn-primary-wrapper { background: #000; padding: var(--stroke); display: inline-block; cursor: pointer; transition: transform 0.1s; width: 100%; }
+        .btn-primary-wrapper:active { transform: translateY(2px); }
+        .btn-primary-content { background: #fff; color: #000; border: none; padding: 12px; font-family: var(--font-main); font-weight: bold; font-size: 20px; width: 100%; cursor: pointer; text-transform: uppercase; }
+        .btn-primary-wrapper:hover .btn-primary-content { background-image: var(--dither) !important; background-size: 2px 2px !important; }
+        .btn-primary-wrapper.disabled { opacity: 0.5; pointer-events: none; }
+
+        .bottom-actions {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .payroll { font-size: 20px; font-weight: bold; text-align: left; margin-bottom: 0; line-height: 1.1; flex-shrink: 0; }
+
+        /* ══════════════════════════════════════════════
+           MODAL
+        ══════════════════════════════════════════════ */
+        .overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(229, 229, 229, 0.9); z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+        }
+        .modal {
+            background: #fff; border: 4px solid #000; padding: 30px; width: 500px;
+            box-shadow: 8px 8px 0 #000; display: flex; flex-direction: column;
+        }
+        .modal h2 { margin: 0 0 15px 0; font-size: 32px; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 8px; }
+        .modal-score { font-size: 64px; font-weight: bold; margin: 10px 0; text-align: center; }
+        .modal-log { border: 2px dashed #000; height: 180px; overflow-y: auto; padding: 10px; font-size: 18px; margin-bottom: 20px; background: #fafafa; }
+        
+    </style>
 </head>
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="en"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Starship Recruiter - Legacy Edition&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;link href="https://fonts.googleapis.com/css2?family=VT323&amp;display=swap" rel="stylesheet"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>:root {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--bg: #e5e5e5;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--fg: #000000;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--font-main: 'VT323', monospace;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--step: 2px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--stroke: 2px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--dither: conic-gradient(#000 0.25turn, transparent 0.25turn 0.5turn, #000 0.5turn 0.75turn, transparent 0.75turn);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-color: var(--bg);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: var(--fg);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: var(--font-main);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 100vh;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-direction: column;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-sizing: border-box;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>user-select: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>*, *::before, *::after { box-sizing: border-box; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* ══════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">           </span>GEOMETRY CORNERS</p>
-<p class="p1"><span class="Apple-converted-space">        </span>══════════════════════════════════════════════ */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.pixel-notch {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>clip-path: polygon(</p>
-<p class="p1"><span class="Apple-converted-space">                </span>0% var(--step), var(--step) var(--step), var(--step) 0%,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>calc(100% - var(--step)) 0%, calc(100% - var(--step)) var(--step), 100% var(--step),</p>
-<p class="p1"><span class="Apple-converted-space">                </span>100% calc(100% - var(--step)), calc(100% - var(--step)) calc(100% - var(--step)), calc(100% - var(--step)) 100%,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>var(--step) 100%, var(--step) calc(100% - var(--step)), 0% calc(100% - var(--step))</p>
-<p class="p1"><span class="Apple-converted-space">            </span>);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.pixel-staircase {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>clip-path: polygon(</p>
-<p class="p1"><span class="Apple-converted-space">                </span>0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)</p>
-<p class="p1"><span class="Apple-converted-space">            </span>);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* ══════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">           </span>LAYOUT (SCALED FOR PREVIEW)</p>
-<p class="p1"><span class="Apple-converted-space">        </span>══════════════════════════════════════════════ */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.header {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-bottom: 2px solid var(--fg);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 10px 20px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: space-between;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-shrink: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #fff;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 100;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.header-title { font-size: 24px; font-weight: bold; text-transform: uppercase; letter-spacing: -0.04em; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.header-stats { font-size: 22px; display: flex; gap: 20px; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.main-area {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex: 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow-x: auto;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow-y: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.col {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-direction: column;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow-y: auto;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-right: 2px solid var(--fg);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.col-left { width: 240px; flex-shrink: 0; background: #fff; }</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.col-center {<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex: 1;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>min-width: 480px;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: relative;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-color: #ffffff;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-image: radial-gradient(circle at 1px 1px, #000 1px, transparent 0);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-size: 20px 20px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}<span class="Apple-converted-space"> </span></p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.col-right { width: 280px; flex-shrink: 0; background: #fff; border-right: none; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.section-title {<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 20px;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-transform: uppercase;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-bottom: none;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding-bottom: 8px;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 12px;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-image: linear-gradient(to right, #000 50%, transparent 50%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-size: 4px 2px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-position: bottom;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-repeat: repeat-x;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* ══════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">           </span>COMPONENTS</p>
-<p class="p1"><span class="Apple-converted-space">        </span>══════════════════════════════════════════════ */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.ui-tag { background: #000; color: #fff; padding: 4px 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; text-transform: uppercase; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.ui-tag.outline { background: #fff; color: #000; border: 2px solid #000; padding: 2px 4px; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.mission-card { border: 2px solid var(--fg); padding: 12px; margin-bottom: 20px; background: #fff; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.mission-title { font-size: 22px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; line-height: 1; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.mission-detail { font-size: 18px; margin-top: 8px; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.manual-entry { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 2px dotted #000; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.manual-name { font-size: 20px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.manual-desc { font-size: 16px; line-height: 1.1; margin-top: 4px; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.manual-hates { font-size: 16px; margin-top: 4px; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* ══════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">           </span>CARD STRUCTURE &amp; DRAG PHYSICS (SCALED)</p>
-<p class="p1"><span class="Apple-converted-space">        </span>══════════════════════════════════════════════ */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.pool-grid {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: grid;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 16px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-content: start;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-stack { position: relative; width: 220px; height: auto; margin: 0 auto; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-placeholder { width: 100%; height: 100%; border: none; background: transparent; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.drag-wrapper { position: relative; width: 100%; height: auto; cursor: grab; z-index: 10; touch-action: none; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.drag-wrapper:active { cursor: grabbing; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-shadow {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute; top: 0; left: 0; width: 100%; height: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-image: var(--dither); background-size: 2px 2px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>z-index: 1; opacity: 0; pointer-events: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: transform 0.25s cubic-bezier(0.2, 0, 0.3, 1), opacity 0.2s ease-out;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.drag-wrapper:hover .card-shadow { opacity: 1; transform: translate(-6px, 6px); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.drag-wrapper.dragging { z-index: 1000; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.drag-wrapper.dragging .card-shadow { opacity: 1; transform: translate(-15px, 15px); transition: none; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-container {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%; height: auto; background: var(--fg); padding: var(--stroke);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: relative; z-index: 2; transition: transform 0.2s cubic-bezier(0.2, 0, 0.3, 1);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.drag-wrapper:hover .card-container { transform: translateY(-4px); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.drag-wrapper.dragging .card-container { transform: translateY(0); }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-content {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%; height: auto; background: #ffffff; padding: 10px 12px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex; flex-direction: column; gap: 4px; overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-head { display: flex; justify-content: space-between; align-items: center; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-name { font-size: 22px; line-height: 0.84; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.avatar-box {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%; height: 100px; background: #ffffff; border: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex; align-items: center; justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 48px; margin: 4px 0; flex-shrink: 0; overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-div { height: 2px; background-image: linear-gradient(to right, #000 50%, transparent 50%); background-size: 4px 2px; background-repeat: repeat-x; margin: 2px 0; border: none; flex-shrink: 0; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-skills { font-size: 20px; line-height: 1; display: flex; justify-content: space-between; width: 100%; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.hi-stat { font-weight: bold; }</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-exp { font-size: 20px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card-salary { font-size: 20px; font-weight: bold; line-height: 1; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.hate-row { display: flex; align-items: center; gap: 6px; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.hate-lbl { font-size: 20px; line-height: 1; flex-shrink: 0; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.hate-outer { width: 40px; height: 10px; border: 2px solid #000; background: #fff; position: relative; overflow: hidden; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.hate-fill { position: absolute; inset: 0; right: auto; background-image: var(--dither); background-size: 2px 2px; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.hate-pct { font-size: 20px; line-height: 1; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* ══════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">           </span>SHIP &amp; ROSTER SLOTS</p>
-<p class="p1"><span class="Apple-converted-space">        </span>══════════════════════════════════════════════ */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.ship-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.roster-grid {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.target-slot {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%; height: 48px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex; justify-content: center; align-items: center; position: relative;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 22px; color: #000; text-transform: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-image: linear-gradient(to right, #000 50%, transparent 50%), linear-gradient(to bottom, #000 50%, transparent 50%), linear-gradient(to right, #000 50%, transparent 50%), linear-gradient(to bottom, #000 50%, transparent 50%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-size: 8px 2px, 2px 8px, 8px 2px, 2px 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-position: top, right, bottom, left; background-repeat: repeat-x, repeat-y, repeat-x, repeat-y;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: background-color 0.2s;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Dither overlay active state matching button hover */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.target-slot.drag-over {<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-color: #fff !important;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-image: var(--dither) !important;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-size: 2px 2px !important;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 2px solid #000 !important;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.roster-card-mini {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%; height: 100%; background: #000; color: #fff; padding: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex; justify-content: space-between; align-items: center; cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.roster-card-mini:hover { background: #333; }</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-primary-wrapper { background: #000; padding: var(--stroke); display: inline-block; cursor: pointer; transition: transform 0.1s; width: 100%; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-primary-wrapper:active { transform: translateY(2px); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-primary-content { background: #fff; color: #000; border: none; padding: 12px; font-family: var(--font-main); font-weight: bold; font-size: 20px; width: 100%; cursor: pointer; text-transform: uppercase; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-primary-wrapper:hover .btn-primary-content { background-image: var(--dither) !important; background-size: 2px 2px !important; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.btn-primary-wrapper.disabled { opacity: 0.5; pointer-events: none; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.bottom-actions {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: auto;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-direction: column;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: flex-start;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.payroll { font-size: 20px; font-weight: bold; text-align: left; margin-bottom: 0; line-height: 1.1; flex-shrink: 0; }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* ══════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">           </span>MODAL</p>
-<p class="p1"><span class="Apple-converted-space">        </span>══════════════════════════════════════════════ */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.overlay {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: fixed; top: 0; left: 0; right: 0; bottom: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(229, 229, 229, 0.9); z-index: 2000;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: none; justify-content: center; align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.modal {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #fff; border: 4px solid #000; padding: 30px; width: 500px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 8px 8px 0 #000; display: flex; flex-direction: column;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.modal h2 { margin: 0 0 15px 0; font-size: 32px; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 8px; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.modal-score { font-size: 64px; font-weight: bold; margin: 10px 0; text-align: center; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.modal-log { border: 2px dashed #000; height: 180px; overflow-y: auto; padding: 10px; font-size: 18px; margin-bottom: 20px; background: #fafafa; }</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;div class="header"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="header-title"&gt;STARSHIP RECRUITER // V4.0&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="header-stats"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;span&gt;DAY &lt;span id="ui-day"&gt;1&lt;/span&gt;&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style="font-weight:bold;"&gt;&lt;span id="ui-money"&gt;800&lt;/span&gt; CR&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;div class="main-area"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- LEFT: MISSION &amp; MANUAL --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="col col-left"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="section-title"&gt;MISSION INTEL&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="mission-card pixel-notch" id="ui-mission"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Populated by JS --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="section-title"&gt;XENO-BIOLOGY MANUAL&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="ui-manual"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Populated by JS --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- CENTER: APPLICANTS --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="col col-center" id="pool-area"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="section-title" id="pool-title" style="background-image: none; padding-bottom: 0;"&gt;APPLICANTS (0)&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="pool-grid" id="pool-grid"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Cards go here --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- RIGHT: SHIP ROSTER --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="col col-right" id="right-panel"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="ship-header"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="section-title" style="border:none; margin:0; padding:0; padding-bottom: 0; background-image: none;"&gt;SHIP MANIFEST&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div style="font-size: 20px; font-weight: normal;" id="ui-ship-name"&gt;Scout (0/5)&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style="height: 2px; background-image: linear-gradient(to right, #000 50%, transparent 50%); background-size: 4px 2px; background-repeat: repeat-x; margin-bottom: 12px;"&gt;&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="roster-grid" id="roster-grid"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Target slots go here --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="ui-ship-min" style="font-size: 20px; font-weight: normal; text-align: left; margin-bottom: 12px; text-transform: uppercase;"&gt;MIN: 0&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="bottom-actions"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="payroll"&gt;PAYROLL: &lt;span id="ui-payroll"&gt;0&lt;/span&gt; CR&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="btn-primary-wrapper pixel-notch" id="btn-launch-wrap"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;button class="btn-primary-content pixel-notch" onclick="launchMission()"&gt;LAUNCH MISSION&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;!-- MODAL --&gt;</p>
-<p class="p1">&lt;div class="overlay" id="result-overlay"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="modal pixel-notch"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;h2 id="res-title"&gt;DEBRIEFING&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="modal-score" id="res-score"&gt;100%&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="res-msg" style="font-size:22px; font-weight:bold; text-align:center; margin-bottom:15px;"&gt;Success&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="modal-log" id="res-log"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="btn-primary-wrapper pixel-notch" style="margin-top:0;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button id="modal-btn" class="btn-primary-content pixel-notch" onclick="nextDay()"&gt;CONTINUE&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// ══════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// GAME DATA &amp; LOGIC (V4.0 Unified Reference)</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// ══════════════════════════════════════════════</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>const MAX_PORTRAITS = 12; // Adjust this if you have more/fewer portraits per race</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>const RACES = {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Human":<span class="Apple-converted-space">        </span>{ icon: "images/human_icon.png",<span class="Apple-converted-space">        </span>images: 12, str: [8,20], int: [8,20], cha: [8,20], hates: ["Robomantoid", "Drakhen"], desc: "Adaptable. Stats never all equal." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Sky-Elf":<span class="Apple-converted-space">      </span>{ icon: "images/sky-elf_icon.png",<span class="Apple-converted-space">      </span>images: 12, str: [6,16], int: [28,45], cha: [8,18], hates: ["Giant", "Droid", "Beetlegunner", "Fungi"], desc: "INT always highest skill." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Beetlegunner": { icon: "images/beetlegunner_icon.png", images: 12, str: [22,38], int: [4,12], cha: [4,10], hates: ["Sky-Elf", "Droid", "Fungi"], desc: "STR &gt; CHA always." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Giant":<span class="Apple-converted-space">        </span>{ icon: "images/giant_icon.png",<span class="Apple-converted-space">        </span>images: 12, str: [30,50], int: [3,10], cha: [3,10], hates: ["Giant"], desc: "STR &gt; (INT + CHA) always." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Droid":<span class="Apple-converted-space">        </span>{ icon: "images/droid_icon.png",<span class="Apple-converted-space">        </span>images: 12, str: [15,28], int: [15,28], cha: [2,8], hates: ["Sugorian", "Beetlegunner", "Aquasim"], desc: "Name ends with a Number." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Robomantoid":<span class="Apple-converted-space">  </span>{ icon: "images/robomantoid_icon.png",<span class="Apple-converted-space">  </span>images: 12, str: [28,45], int: [8,18], cha: [5,12], hates: ["Void-Demon", "Sky-Elf", "Sugorian"], desc: "HATE &gt;= 20% always." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Barbitulian":<span class="Apple-converted-space">  </span>{ icon: "images/barbitulian_icon.png",<span class="Apple-converted-space">  </span>images: 12, str: [8,20], int: [18,32], cha: [18,32], hates: ["Robomantoid", "Cheesponge"], desc: "INT must equal CHA." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Space-Cat":<span class="Apple-converted-space">    </span>{ icon: "images/space-cat_icon.png",<span class="Apple-converted-space">    </span>images: 12, str: [8,18], int: [12,26], cha: [28,45], hates: ["Long-Neck", "Sugorian", "Void-Demon"], desc: "CHA always highest skill." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Velkhorian": <span class="Apple-converted-space">  </span>{ icon: "images/velkhorian_icon.png", <span class="Apple-converted-space">  </span>images: 12, str: [18,32], int: [20,34], cha: [22,36], hates: ["Drakhen"], desc: "HATE &lt;= 60%. Avian diplomats." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Drakhen":<span class="Apple-converted-space">      </span>{ icon: "images/drakhen_icon.png",<span class="Apple-converted-space">      </span>images: 12, str: [45,65], int: [45,65], cha: [25,45], hates: ["ALL"], desc: "Pure evil. Best stats. Hates everyone." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Aquasim":<span class="Apple-converted-space">      </span>{ icon: "images/aquasim_icon.png",<span class="Apple-converted-space">      </span>images: 12, str: [12,28], int: [12,28], cha: [3,10], hates: ["Squid", "Sugorian", "Sodio"], desc: "CHA is always lowest skill." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Void-Demon": <span class="Apple-converted-space">  </span>{ icon: "images/void-demon_icon.png", <span class="Apple-converted-space">  </span>images: 12, str: [8,20], int: [10,24], cha: [20,35], hates: ["NO ONE"], desc: "CHA &gt; STR always. Pacifists." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Fungi":<span class="Apple-converted-space">        </span>{ icon: "images/fungi_icon.png",<span class="Apple-converted-space">        </span>images: 12, str: [15,28], int: [8,20], cha: [5,15], hates: ["Beetlegunner", "Drakhen", "Aquasim"], desc: "HATE &gt;= 80%. Always screaming." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Oak-Person": <span class="Apple-converted-space">  </span>{ icon: "images/oak-person_icon.png", <span class="Apple-converted-space">  </span>images: 12, str: [20,35], int: [15,28], cha: [1,4], hates: ["Drakhen", "Beetlegunner", "Droid", "Robomantoid"], desc: "CHA &lt; 5 always. Slow." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Long-Neck":<span class="Apple-converted-space">    </span>{ icon: "images/long-neck_icon.png",<span class="Apple-converted-space">    </span>images: 12, str: [8,18], int: [18,32], cha: [8,18], hates: ["Giant", "Aquasim", "Fungi", "Robomantoid"], desc: "INT &gt; STR always." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Squid":<span class="Apple-converted-space">        </span>{ icon: "images/squid_icon.png",<span class="Apple-converted-space">        </span>images: 12, str: [8,18], int: [38,58], cha: [10,22], hates: ["Aquasim", "Drakhen", "Beetlegunner", "Giant"], desc: "INT &gt; STR. Highest INT ceiling." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Sugorian": <span class="Apple-converted-space">    </span>{ icon: "images/sugorian_icon.png", <span class="Apple-converted-space">    </span>images: 12, str: [10,22], int: [10,22], cha: [15,28], hates: ["Human", "Sky-Elf", "Drakhen"], desc: "Bio-luminescent jelly. HATE &lt;= 50%." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Cheesponge": <span class="Apple-converted-space">  </span>{ icon: "images/cheesponge_icon.png", <span class="Apple-converted-space">  </span>images: 12, str: [3,10], int: [20,32], cha: [18,30], hates: ["Barbitulian", "Drakhen", "Aquasim"], desc: "STR always lowest skill." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Sodio":<span class="Apple-converted-space">        </span>{ icon: "images/sodio_icon.png",<span class="Apple-converted-space">        </span>images: 12, str: [22,38], int: [8,20], cha: [8,18], hates: ["Aquasim", "Cheesponge", "Sugorian"], desc: "Crystalline rock-salt beings. STR &gt; INT." },</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"Blorg":<span class="Apple-converted-space">        </span>{ icon: "images/blorg_icon.png",<span class="Apple-converted-space">        </span>images: 12, str: [5,15], int: [32,50], cha: [10,22], hates: ["Sugorian", "Fungi", "Drakhen"], desc: "HATE &lt;= 20%." }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>const NAMES = ["Zog", "Blorp", "Kev", "Lara", "Grom", "Vok", "Nebula", "Starla", "Rex", "Tkt"];</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const ROLES = ["COMMAND", "OPERATIONS", "SCIENCE", "FORCE", "LOGISTICS"];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>let state = {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>day: 1,</p>
-<p class="p1"><span class="Apple-converted-space">        </span>money: 800, // Fixed to match the UI!</p>
-<p class="p1"><span class="Apple-converted-space">        </span>pool: [],</p>
-<p class="p1"><span class="Apple-converted-space">        </span>roster: [],<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>mission: null,</p>
-<p class="p1"><span class="Apple-converted-space">        </span>ship: null,</p>
-<p class="p1"><span class="Apple-converted-space">        </span>gameOver: false</p>
-<p class="p1"><span class="Apple-converted-space">    </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }</p>
-<p class="p2"><span class="Apple-converted-space">    </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function generateApplicant(id) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const races = Object.keys(RACES);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let available = races.slice(0, Math.min(6 + Math.floor(state.day/2), races.length));</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const raceKey = available[rand(0, available.length - 1)];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const rd = RACES[raceKey];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let str = rand(rd.str[0], rd.str[1]);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let int = rand(rd.int[0], rd.int[1]);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let cha = rand(rd.cha[0], rd.cha[1]);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let hate = rand(0, 100);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let name = NAMES[rand(0, NAMES.length - 1)];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Enforce Biological Traits to not generate Saboteurs by default</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Sugorian") hate = rand(0, 50);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Blorg") hate = rand(0, 20);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Sky-Elf") { int = Math.max(str, cha) + rand(1, 10); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Human") { while (str === int &amp;&amp; int === cha) { str++; } }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Beetlegunner") { str = Math.max(str, cha + 1); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Giant") { str = int + cha + rand(1, 10); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Droid") { name += "-" + rand(1, 99); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Robomantoid") { hate = rand(20, 100); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Barbitulian") { int = cha; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Cheesponge" || raceKey === "Aquasim") { str = Math.min(int, cha) - rand(1, 5); if (str &lt; 1) str = 1; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Space-Cat") { cha = Math.max(str, int) + rand(1, 10); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Velkhorian") { hate = rand(0, 60); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Fungi" || raceKey === "Drakhen") { hate = rand(80, 100); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Drakhen") { int = str; }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Void-Demon") { cha = str + rand(1, 10); hate = rand(0, 10); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Oak-Person") { cha = rand(1, 4); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Long-Neck" || raceKey === "Squid") { int = str + rand(1, 10); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (raceKey === "Sodio") { str = Math.max(str, int + 1); }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const safeRaceName = raceKey.toLowerCase();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const maxImgs = rd.images || 12;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const portraitVariant = rand(1, maxImgs);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>return {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>id: id,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>name: name,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>race: raceKey,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>str: str, int: int, cha: cha, hate: hate,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>exp: ROLES[rand(0, ROLES.length - 1)],</p>
-<p class="p1"><span class="Apple-converted-space">            </span>portrait: `images/${safeRaceName}_portrait_${portraitVariant}.png`,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cost: Math.floor((str + int + cha) * 1.5) + rand(5, 15)</p>
-<p class="p1"><span class="Apple-converted-space">        </span>};</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function generateMission() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const types = [</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{ id: "ASSAULT", stat: ["str"], t: 1 },</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{ id: "DIPLOMACY", stat: ["cha"], t: 1 },</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{ id: "RESEARCH", stat: ["int"], t: 1 },</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{ id: "RESCUE", stat: ["str", "int"], t: 2 },</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{ id: "SMUGGLING", stat: ["int", "cha"], t: 2 },</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{ id: "EVACUATION", stat: ["str", "int", "cha"], t: 3 }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>];</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let available = types.filter(t =&gt; t.t === 1);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (state.day &gt; 4) available = available.concat(types.filter(t =&gt; t.t === 2));</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (state.day &gt; 8) available = available.concat(types.filter(t =&gt; t.t === 3));</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const m = available[rand(0, available.length - 1)];</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// STEEPER DIFFICULTY SCALING</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const targetBase = 45 + Math.floor(state.day * 7.5);<span class="Apple-converted-space"> </span></p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let targets = {};</p>
-<p class="p1"><span class="Apple-converted-space">        </span>m.stat.forEach(s =&gt; targets[s] = targetBase + rand(-5, 5));</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>return {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>title: m.id + " OP-" + rand(100, 999),</p>
-<p class="p1"><span class="Apple-converted-space">            </span>type: m.id,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>reqs: m.stat,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>targets: targets,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// STEEPER MIN SUCCESS SCALING (Starts at 66, goes up to 95)</p>
-<p class="p1"><span class="Apple-converted-space">            </span>minReq: Math.min(95, 65 + Math.floor(state.day * 1.2)),</p>
-<p class="p1"><span class="Apple-converted-space">            </span>reward: 500 + (state.day * 90)</p>
-<p class="p1"><span class="Apple-converted-space">        </span>};</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function updateShip() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (state.day &lt;= 3) state.ship = { name: "Speeder", max: 5, min: 3 };</p>
-<p class="p1"><span class="Apple-converted-space">        </span>else if (state.day &lt;= 6) state.ship = { name: "Scout", max: 6, min: 4 };</p>
-<p class="p1"><span class="Apple-converted-space">        </span>else if (state.day &lt;= 10) state.ship = { name: "Gunship", max: 7, min: 4 };</p>
-<p class="p1"><span class="Apple-converted-space">        </span>else state.ship = { name: "Destroyer", max: 8, min: 5 };</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>state.roster = new Array(state.ship.max).fill(null);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function startDay() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>updateShip();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>state.mission = generateMission();</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const poolSize = 6 + Math.floor(state.day / 2);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>state.pool = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>for(let i=0; i&lt;poolSize; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>state.pool.push(generateApplicant(i));</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>updateUI();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// ══════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// RENDER LOGIC</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// ══════════════════════════════════════════════</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function updateUI() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Dynamic Applicant Count</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const remainingCount = state.pool.filter(app =&gt; !state.roster.find(a =&gt; a &amp;&amp; a.id === app.id)).length;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('pool-title').innerText = `APPLICANTS (${remainingCount})`;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Mission</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const m = state.mission;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let reqHTML = m.reqs.map(r =&gt; `&lt;span class="ui-tag outline pixel-notch"&gt;${r.toUpperCase()}: ${m.targets[r]}&lt;/span&gt;`).join(" ");</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('ui-mission').innerHTML = `</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="mission-title"&gt;${m.title}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div style="margin-bottom:8px;"&gt;&lt;span class="ui-tag pixel-notch"&gt;${m.type}&lt;/span&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="mission-detail"&gt;${reqHTML}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="mission-detail"&gt;MIN SUCCESS: &lt;strong&gt;${m.minReq}%&lt;/strong&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="mission-detail" style="margin-top:12px;"&gt;REWARD: &lt;strong&gt;${m.reward} CR&lt;/strong&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>`;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Manual</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let manualHTML = "";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let availableRaces = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>state.pool.forEach(p =&gt; { if(!availableRaces.includes(p.race)) availableRaces.push(p.race); });</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>availableRaces.forEach(rKey =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const rd = RACES[rKey];</p>
-<p class="p1"><span class="Apple-converted-space">            </span>manualHTML += `</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="manual-entry"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="manual-name"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;img src="${rd.icon}" alt="${rKey}" style="width:24px; height:24px; image-rendering:pixelated; display:inline-block; vertical-align:middle; margin-right:6px;" onerror="this.style.display='none'"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>${rKey}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="manual-desc"&gt;${rd.desc}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="manual-hates"&gt;HATES: &lt;strong&gt;${rd.hates.join(", ")}&lt;/strong&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('ui-manual').innerHTML = manualHTML;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Roster Slots</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const rGrid = document.getElementById('roster-grid');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>rGrid.innerHTML = "";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let currentCrewCount = 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let currentCost = 0;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>for(let i=0; i&lt;state.ship.max; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const slotId = i;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const app = state.roster[i];</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const slotDiv = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>slotDiv.className = "target-slot pixel-notch";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>slotDiv.dataset.slotId = slotId;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (app) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>currentCrewCount++;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>currentCost += app.cost;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>slotDiv.style.border = "none";</p>
-<p class="p1"><span class="Apple-converted-space">                </span>slotDiv.style.background = "none";</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>slotDiv.innerHTML = `</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="roster-card-mini pixel-notch" onclick="returnToPool(${slotId})"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div style="display:flex; align-items:center; gap:8px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;img src="${RACES[app.race].icon}" alt="icon" style="width:28px; height:28px; image-rendering:pixelated;" onerror="this.style.display='none'"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div style="display:flex; flex-direction:column; align-items:flex-start;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;span style="font-size:18px; font-weight:bold; line-height:1;"&gt;${app.name}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;span style="font-size:14px; text-transform:uppercase;"&gt;${app.race}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div style="font-size:20px; font-weight:bold;"&gt;${app.cost} CR&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>slotDiv.innerHTML = `Slot ${i+1}`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>rGrid.appendChild(slotDiv);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('ui-ship-name').innerText = `${state.ship.name} (${currentCrewCount}/${state.ship.max})`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('ui-ship-min').innerText = `MIN: ${state.ship.min}`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('ui-payroll').innerText = currentCost;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Credit display dynamically accounts for current payroll</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('ui-day').innerText = state.day;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('ui-money').innerText = state.money - currentCost;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const launchBtn = document.getElementById('btn-launch-wrap');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (currentCrewCount &gt; 0) launchBtn.classList.remove('disabled');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>else launchBtn.classList.add('disabled');</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Pool</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const pGrid = document.getElementById('pool-grid');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>pGrid.innerHTML = "";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>state.pool.forEach(app =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Hide if hired</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (state.roster.find(a =&gt; a &amp;&amp; a.id === app.id)) return;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const rd = RACES[app.race];</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const hl = (s) =&gt; m.reqs.includes(s) ? 'hi-stat' : '';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const el = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>el.className = "card-stack";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>el.innerHTML = `</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="drag-wrapper" data-id="${app.id}"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="card-shadow pixel-staircase"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="card-container pixel-staircase"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="card-content pixel-staircase"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="card-head"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="card-name"&gt;${app.name}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="ui-tag pixel-notch"&gt;${app.race}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="avatar-box"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;img src="${app.portrait}" alt="${app.name}" style="width:100%; height:100%; object-fit:cover; image-rendering:pixelated;" onerror="this.style.display='none'; this.parentNode.innerHTML='&lt;span style=\\'font-size:48px; color:#ccc;\\'&gt;?&lt;/span&gt;';"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="card-skills"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;span class="${hl('str')}"&gt;STR: ${app.str}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;span class="${hl('int')}"&gt;INT: ${app.int}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;span class="${hl('cha')}"&gt;CHA: ${app.cha}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="card-exp"&gt;EXP: ${app.exp}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;hr class="card-div"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="card-foot"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="hate-row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="hate-lbl"&gt;HATE&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="hate-outer pixel-notch"&gt;&lt;div class="hate-fill" style="width:${app.hate}%"&gt;&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div class="hate-pct"&gt;${app.hate}%&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div class="card-salary"&gt;${app.cost} cr&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pGrid.appendChild(el);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>bindDragEvents();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// ══════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// DRAG &amp; DROP PHYSICS (Pointer Events + Click)</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// ══════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">    </span>let activeCard = null;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>let startX = 0, startY = 0;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>let placeholder = null;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>let originalParent = null;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>let hasMoved = false;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function bindDragEvents() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const wrappers = document.querySelectorAll('.drag-wrapper');</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>wrappers.forEach(card =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>card.addEventListener('pointerdown', (e) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (e.pointerType === 'mouse' &amp;&amp; e.button !== 0) return;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>activeCard = card;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>originalParent = card.parentElement;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>hasMoved = false;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>const rect = card.getBoundingClientRect();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>startX = e.clientX - rect.left;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>startY = e.clientY - rect.top;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>placeholder = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>placeholder.className = 'card-placeholder pixel-staircase';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>originalParent.appendChild(placeholder);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>card.style.width = rect.width + 'px';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>card.style.height = rect.height + 'px';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>card.style.left = rect.left + 'px';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>card.style.top = rect.top + 'px';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>card.style.position = 'fixed';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>card.style.zIndex = '1000';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>card.classList.add('dragging');</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>card.setPointerCapture(e.pointerId);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>e.preventDefault();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>document.addEventListener('pointermove', (e) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!activeCard) return;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>hasMoved = true;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>activeCard.style.left = (e.clientX - startX) + 'px';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>activeCard.style.top = (e.clientY - startY) + 'px';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const slots = document.querySelectorAll('.target-slot');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let hoveringPanel = false;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Check if cursor is over the right panel at all</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const rightPanel = document.getElementById('right-panel');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (rightPanel) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const rpRect = rightPanel.getBoundingClientRect();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (e.clientX &gt; rpRect.left &amp;&amp; e.clientX &lt; rpRect.right &amp;&amp; e.clientY &gt; rpRect.top &amp;&amp; e.clientY &lt; rpRect.bottom) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>hoveringPanel = true;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Clean up all slots first</p>
-<p class="p1"><span class="Apple-converted-space">        </span>slots.forEach(slot =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>slot.classList.remove('drag-over');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// If hovering directly over a slot (might be outside the panel bounds technically), also count it</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (isOverSlot(e.clientX, e.clientY, slot)) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>hoveringPanel = true;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// If hovering anywhere in the right panel zone, highlight the FIRST available slot</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (hoveringPanel) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const firstEmptyIndex = state.roster.findIndex(a =&gt; a === null);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (firstEmptyIndex !== -1) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const targetSlotEl = document.querySelector(`.target-slot[data-slot-id="${firstEmptyIndex}"]`);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (targetSlotEl) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>targetSlotEl.classList.add('drag-over');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>document.addEventListener('pointerup', (e) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!activeCard) return;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const card = activeCard;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.releasePointerCapture(e.pointerId);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.classList.remove('dragging');</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const slots = document.querySelectorAll('.target-slot');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>slots.forEach(s =&gt; s.classList.remove('drag-over'));</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const appId = parseInt(card.dataset.id);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!hasMoved) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if(placeholder) placeholder.remove();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resetCardStyles(card);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const firstEmptySlot = state.roster.findIndex(a =&gt; a === null);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (firstEmptySlot !== -1) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>assignToSlot(appId, firstEmptySlot);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>updateUI();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>activeCard = null;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.style.transition = 'top 0.15s cubic-bezier(0.2,0,0.3,1), left 0.15s cubic-bezier(0.2,0,0.3,1)';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let targetX, targetY;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let targetSlotId = null;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let droppedInPanel = false;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Check drop over right panel</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const rightPanel = document.getElementById('right-panel');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (rightPanel) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const rpRect = rightPanel.getBoundingClientRect();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (e.clientX &gt; rpRect.left &amp;&amp; e.clientX &lt; rpRect.right &amp;&amp; e.clientY &gt; rpRect.top &amp;&amp; e.clientY &lt; rpRect.bottom) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>droppedInPanel = true;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Check direct slot drop just in case</p>
-<p class="p1"><span class="Apple-converted-space">        </span>for(let slot of slots) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (isOverSlot(e.clientX, e.clientY, slot)) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>droppedInPanel = true;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>break;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// If dropped anywhere in the valid zone, snap to the NEXT AVAILABLE empty slot</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (droppedInPanel) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const firstEmptyIndex = state.roster.findIndex(a =&gt; a === null);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (firstEmptyIndex !== -1) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>targetSlotId = firstEmptyIndex;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const targetSlotEl = document.querySelector(`.target-slot[data-slot-id="${firstEmptyIndex}"]`);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (targetSlotEl) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const sRect = targetSlotEl.getBoundingClientRect();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>targetX = sRect.left + (sRect.width - card.offsetWidth) / 2;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>targetY = sRect.top + (sRect.height - card.offsetHeight) / 2;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// If it wasn't dropped in the panel OR the panel is completely full</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (targetSlotId === null) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const phRect = placeholder.getBoundingClientRect();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>targetX = phRect.left;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>targetY = phRect.top;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.style.left = targetX + 'px';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.style.top = targetY + 'px';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>setTimeout(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if(placeholder) placeholder.remove();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resetCardStyles(card);</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (targetSlotId !== null) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>assignToSlot(appId, parseInt(targetSlotId));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>updateUI();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>activeCard = null;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}, 150);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function resetCardStyles(card) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.style.transition = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.style.position = 'relative';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.style.left = '';<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.style.top = '';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.style.width = '';<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.style.height = '';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.style.zIndex = '10';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function isOverSlot(x, y, slot) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const rect = slot.getBoundingClientRect();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>return (x &gt; rect.left - 20 &amp;&amp; x &lt; rect.right + 20 &amp;&amp; y &gt; rect.top - 20 &amp;&amp; y &lt; rect.bottom + 20);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function assignToSlot(appId, slotId) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const app = state.pool.find(a =&gt; a.id === appId);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!app) return;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const currentOccupant = state.roster[slotId];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const totalCost = state.roster.reduce((sum, a) =&gt; sum + (a ? a.cost : 0), 0);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const replacementCost = currentOccupant ? currentOccupant.cost : 0;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (state.money &lt; (totalCost - replacementCost + app.cost)) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>alert("INSUFFICIENT FUNDS. You cannot afford this applicant.");</p>
-<p class="p1"><span class="Apple-converted-space">            </span>updateUI();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>state.roster[slotId] = app;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>updateUI();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function returnToPool(slotId) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>state.roster[slotId] = null;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>updateUI();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// ══════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// RESOLUTION LOGIC (V4.0 Math)</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// ══════════════════════════════════════════════</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function launchMission() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const hired = state.roster.filter(a =&gt; a !== null);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (hired.length === 0) return;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const cost = hired.reduce((sum, app) =&gt; sum + app.cost, 0);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>state.money -= cost;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let logs = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let score = 0;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 1. RAW SKILL</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let statScores = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>state.mission.reqs.forEach(stat =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let sum = hired.reduce((acc, app) =&gt; acc + app[stat], 0);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let pct = (sum / state.mission.targets[stat]) * 100;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>statScores.push(pct);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let rawScore = statScores.reduce((a,b)=&gt;a+b, 0) / statScores.length;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>logs.push(`Base Power Output: ${Math.floor(rawScore)}%`);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 2. SHIP EFFICIENCY</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let effPct = hired.length / state.ship.min;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let effMod = 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (hired.length === state.ship.max) { effMod = 5; logs.push(`Ship at Max Capacity: +5% Bonus`); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>else if (effPct &gt;= 1) { effMod = 0; logs.push(`Ship Minimum Crew Met: 0% Penalty`); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>else if (effPct &gt;= 0.7) { effMod = -20; logs.push(`Understaffed (Tier 1): -20% Penalty`); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>else if (effPct &gt;= 0.4) { effMod = -40; logs.push(`Understaffed (Tier 2): -40% Penalty`); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>else if (effPct &gt;= 0.15) { effMod = -60; logs.push(`Skeleton Crew (Tier 3): -60% Penalty`); }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>else { effMod = -70; logs.push(`Fatal Understaffing (Tier 4): -70% Penalty`); }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 3. CONFLICTS (Mutual Dominance Math)</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let conflictPenalty = 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let conflictCount = 0;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>for(let i=0; i&lt;hired.length; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>for(let j=i+1; j&lt;hired.length; j++) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let a = hired[i]; let rA = RACES[a.race];</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let b = hired[j]; let rB = RACES[b.race];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>let aHatesB = rA.hates.includes(b.race) || rA.hates.includes("ALL");</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let bHatesA = rB.hates.includes(a.race) || rB.hates.includes("ALL");</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (aHatesB &amp;&amp; bHatesA) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>// Mutual Conflict! Compare 2 out of 3 stats</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let aWins = 0, bWins = 0;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if(a.str &gt; b.str) aWins++; else if(b.str &gt; a.str) bWins++;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if(a.int &gt; b.int) aWins++; else if(b.int &gt; a.int) bWins++;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if(a.cha &gt; b.cha) aWins++; else if(b.cha &gt; a.cha) bWins++;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (aWins &gt; bWins) {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>let pen = 10 + (a.hate/4); conflictPenalty += pen; conflictCount++;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>logs.push(`MUTUAL: ${a.race} dominated ${b.race}. -${Math.floor(pen)}%`);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>} else if (bWins &gt; aWins) {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>let pen = 10 + (b.hate/4); conflictPenalty += pen; conflictCount++;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>logs.push(`MUTUAL: ${b.race} dominated ${a.race}. -${Math.floor(pen)}%`);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>let penA = (10 + (a.hate/4))/2;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>let penB = (10 + (b.hate/4))/2;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>conflictPenalty += (penA + penB); conflictCount++;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>logs.push(`MUTUAL DRAW: Bloody stalemate. -${Math.floor(penA+penB)}%`);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>} else if (aHatesB) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let pen = 10 + (a.hate/4); conflictPenalty += pen; conflictCount++;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>logs.push(`CONFLICT: ${a.race} attacked ${b.race}. -${Math.floor(pen)}%`);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>} else if (bHatesA) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let pen = 10 + (b.hate/4); conflictPenalty += pen; conflictCount++;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>logs.push(`CONFLICT: ${b.race} attacked ${a.race}. -${Math.floor(pen)}%`);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 4. SYNERGY</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let synergy = 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (hired.length &gt;= 3 &amp;&amp; conflictCount === 0) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>synergy = 10;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>logs.push(`SYNERGY BONUS: Perfect harmony. +10%`);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// CALC FINAL</p>
-<p class="p1"><span class="Apple-converted-space">        </span>score = Math.floor(rawScore + effMod - conflictPenalty + synergy);</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let overperformance = 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (score &gt; 100) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overperformance = Math.min(20, score - 100);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>score = 100;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (score &lt; 0) score = 0;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 5. PAYOUT VS FINE</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let earned = 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let isSuccess = false;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (score &gt;= state.mission.minReq) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>isSuccess = true;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>earned = Math.floor(state.mission.reward * (score/100));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (overperformance &gt; 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let bonus = Math.floor(state.mission.reward * (overperformance/100));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>earned += bonus;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>logs.push(`OVERPERFORMANCE BONUS: +${bonus} CR`);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let diff = (state.mission.minReq - score) / 100;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>earned = -Math.floor(state.mission.reward * diff);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>logs.push(`FINE APPLIED: Mission requirement (${state.mission.minReq}%) not met.`);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>state.money += earned;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Show Modal</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('res-score').innerText = score + "%";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('res-msg').innerText = isSuccess ? "MISSION SUCCESS" : "MISSION FAILED";</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let logHTML = logs.map(l =&gt; `&lt;div&gt;&gt; ${l}&lt;/div&gt;`).join('');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>logHTML += `&lt;br&gt;&lt;div&gt;&gt; NET FINANCIAL CHANGE: ${earned &gt;= 0 ? '+'+earned : earned} CR&lt;/div&gt;`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('res-log').innerHTML = logHTML;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('result-overlay').style.display = 'flex';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (state.money &lt; 0) state.gameOver = true;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function nextDay() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('result-overlay').style.display = 'none';</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (state.gameOver) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('res-title').innerText = "SYSTEM LOCKOUT";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('res-score').innerText = "BANKRUPT";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('res-score').style.color = "red";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('res-msg').innerText = "Your career is over.";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('res-log').innerHTML = "&gt; Liquidating assets...&lt;br&gt;&gt; Reclaiming organic material...";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('modal-btn').innerText = "START OVER";</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Override the button to manually reset the game instead of refreshing the page</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('modal-btn').onclick = function() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>// 1. Reset Game Variables</p>
-<p class="p1"><span class="Apple-converted-space">                </span>state.day = 1;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>state.money = 800;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>state.gameOver = false;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>state.roster = [];</p>
-<p class="p1"><span class="Apple-converted-space">                </span>state.pool = [];</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// 2. Reset Modal UI styles back to normal</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('res-score').style.color = "";</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('modal-btn').innerText = "CONTINUE";</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// 3. Restore original button function</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('modal-btn').onclick = nextDay;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// 4. Hide modal and restart</p>
-<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('result-overlay').style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">                </span>startDay();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>};</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('result-overlay').style.display = 'flex';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>state.day++;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>startDay();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// INIT</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function init() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>startDay();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><span class="Apple-converted-space">    </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>init();</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+
+<div class="header">
+    <div class="header-title">STARSHIP RECRUITER // V4.0</div>
+    <div class="header-stats">
+        <span>DAY <span id="ui-day">1</span></span>
+        <span style="font-weight:bold;"><span id="ui-money">800</span> CR</span>
+    </div>
+</div>
+
+<div class="main-area">
+    <!-- LEFT: MISSION & MANUAL -->
+    <div class="col col-left">
+        <div class="section-title">MISSION INTEL</div>
+        <div class="mission-card pixel-notch" id="ui-mission">
+            <!-- Populated by JS -->
+        </div>
+
+        <div class="section-title">XENO-BIOLOGY MANUAL</div>
+        <div id="ui-manual">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- CENTER: APPLICANTS -->
+    <div class="col col-center" id="pool-area">
+        <div class="section-title" id="pool-title" style="background-image: none; padding-bottom: 0;">APPLICANTS (0)</div>
+        <div class="pool-grid" id="pool-grid">
+            <!-- Cards go here -->
+        </div>
+    </div>
+
+    <!-- RIGHT: SHIP ROSTER -->
+    <div class="col col-right" id="right-panel">
+        <div class="ship-header">
+            <div class="section-title" style="border:none; margin:0; padding:0; padding-bottom: 0; background-image: none;">SHIP MANIFEST</div>
+            <div style="font-size: 20px; font-weight: normal;" id="ui-ship-name">Scout (0/5)</div>
+        </div>
+        
+        <div style="height: 2px; background-image: linear-gradient(to right, #000 50%, transparent 50%); background-size: 4px 2px; background-repeat: repeat-x; margin-bottom: 12px;"></div>
+
+        <div class="roster-grid" id="roster-grid">
+            <!-- Target slots go here -->
+        </div>
+        
+        <div id="ui-ship-min" style="font-size: 20px; font-weight: normal; text-align: left; margin-bottom: 12px; text-transform: uppercase;">MIN: 0</div>
+
+        <div class="bottom-actions">
+            <div class="payroll">PAYROLL: <span id="ui-payroll">0</span> CR</div>
+            <div class="btn-primary-wrapper pixel-notch" id="btn-launch-wrap">
+                <button class="btn-primary-content pixel-notch" onclick="launchMission()">LAUNCH MISSION</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="result-overlay">
+    <div class="modal pixel-notch">
+        <h2 id="res-title">DEBRIEFING</h2>
+        <div class="modal-score" id="res-score">100%</div>
+        <div id="res-msg" style="font-size:22px; font-weight:bold; text-align:center; margin-bottom:15px;">Success</div>
+        <div class="modal-log" id="res-log"></div>
+        <div class="btn-primary-wrapper pixel-notch" style="margin-top:0;">
+            <button id="modal-btn" class="btn-primary-content pixel-notch" onclick="nextDay()">CONTINUE</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ══════════════════════════════════════════════
+    // GAME DATA & LOGIC (V4.0 Unified Reference)
+    // ══════════════════════════════════════════════
+
+    const MAX_PORTRAITS = 12; // Adjust this if you have more/fewer portraits per race
+
+    const RACES = {
+        "Human":        { icon: "images/human_icon.png",        images: 12, str: [8,20], int: [8,20], cha: [8,20], hates: ["Robomantoid", "Drakhen"], desc: "Adaptable. Stats never all equal." },
+        "Sky-Elf":      { icon: "images/sky-elf_icon.png",      images: 12, str: [6,16], int: [28,45], cha: [8,18], hates: ["Giant", "Droid", "Beetlegunner", "Fungi"], desc: "INT always highest skill." },
+        "Beetlegunner": { icon: "images/beetlegunner_icon.png", images: 12, str: [22,38], int: [4,12], cha: [4,10], hates: ["Sky-Elf", "Droid", "Fungi"], desc: "STR > CHA always." },
+        "Giant":        { icon: "images/giant_icon.png",        images: 12, str: [30,50], int: [3,10], cha: [3,10], hates: ["Giant"], desc: "STR > (INT + CHA) always." },
+        "Droid":        { icon: "images/droid_icon.png",        images: 12, str: [15,28], int: [15,28], cha: [2,8], hates: ["Sugorian", "Beetlegunner", "Aquasim"], desc: "Name ends with a Number." },
+        "Robomantoid":  { icon: "images/robomantoid_icon.png",  images: 12, str: [28,45], int: [8,18], cha: [5,12], hates: ["Void-Demon", "Sky-Elf", "Sugorian"], desc: "HATE >= 20% always." },
+        "Barbitulian":  { icon: "images/barbitulian_icon.png",  images: 12, str: [8,20], int: [18,32], cha: [18,32], hates: ["Robomantoid", "Cheesponge"], desc: "INT must equal CHA." },
+        "Space-Cat":    { icon: "images/space-cat_icon.png",    images: 12, str: [8,18], int: [12,26], cha: [28,45], hates: ["Long-Neck", "Sugorian", "Void-Demon"], desc: "CHA always highest skill." },
+        "Velkhorian":   { icon: "images/velkhorian_icon.png",   images: 12, str: [18,32], int: [20,34], cha: [22,36], hates: ["Drakhen"], desc: "HATE <= 60%. Avian diplomats." },
+        "Drakhen":      { icon: "images/drakhen_icon.png",      images: 12, str: [45,65], int: [45,65], cha: [25,45], hates: ["ALL"], desc: "Pure evil. Best stats. Hates everyone." },
+        "Aquasim":      { icon: "images/aquasim_icon.png",      images: 12, str: [12,28], int: [12,28], cha: [3,10], hates: ["Squid", "Sugorian", "Sodio"], desc: "CHA is always lowest skill." },
+        "Void-Demon":   { icon: "images/void-demon_icon.png",   images: 12, str: [8,20], int: [10,24], cha: [20,35], hates: ["NO ONE"], desc: "CHA > STR always. Pacifists." },
+        "Fungi":        { icon: "images/fungi_icon.png",        images: 12, str: [15,28], int: [8,20], cha: [5,15], hates: ["Beetlegunner", "Drakhen", "Aquasim"], desc: "HATE >= 80%. Always screaming." },
+        "Oak-Person":   { icon: "images/oak-person_icon.png",   images: 12, str: [20,35], int: [15,28], cha: [1,4], hates: ["Drakhen", "Beetlegunner", "Droid", "Robomantoid"], desc: "CHA < 5 always. Slow." },
+        "Long-Neck":    { icon: "images/long-neck_icon.png",    images: 12, str: [8,18], int: [18,32], cha: [8,18], hates: ["Giant", "Aquasim", "Fungi", "Robomantoid"], desc: "INT > STR always." },
+        "Squid":        { icon: "images/squid_icon.png",        images: 12, str: [8,18], int: [38,58], cha: [10,22], hates: ["Aquasim", "Drakhen", "Beetlegunner", "Giant"], desc: "INT > STR. Highest INT ceiling." },
+        "Sugorian":     { icon: "images/sugorian_icon.png",     images: 12, str: [10,22], int: [10,22], cha: [15,28], hates: ["Human", "Sky-Elf", "Drakhen"], desc: "Bio-luminescent jelly. HATE <= 50%." },
+        "Cheesponge":   { icon: "images/cheesponge_icon.png",   images: 12, str: [3,10], int: [20,32], cha: [18,30], hates: ["Barbitulian", "Drakhen", "Aquasim"], desc: "STR always lowest skill." },
+        "Sodio":        { icon: "images/sodio_icon.png",        images: 12, str: [22,38], int: [8,20], cha: [8,18], hates: ["Aquasim", "Cheesponge", "Sugorian"], desc: "Crystalline rock-salt beings. STR > INT." },
+        "Blorg":        { icon: "images/blorg_icon.png",        images: 12, str: [5,15], int: [32,50], cha: [10,22], hates: ["Sugorian", "Fungi", "Drakhen"], desc: "HATE <= 20%." }
+    };
+
+    const NAMES = ["Zog", "Blorp", "Kev", "Lara", "Grom", "Vok", "Nebula", "Starla", "Rex", "Tkt"];
+    const ROLES = ["COMMAND", "OPERATIONS", "SCIENCE", "FORCE", "LOGISTICS"];
+
+    let state = {
+        day: 1,
+        money: 800, // Fixed to match the UI!
+        pool: [],
+        roster: [], 
+        mission: null,
+        ship: null,
+        gameOver: false
+    };
+
+    function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    
+    function generateApplicant(id) {
+        const races = Object.keys(RACES);
+        let available = races.slice(0, Math.min(6 + Math.floor(state.day/2), races.length));
+        const raceKey = available[rand(0, available.length - 1)];
+        const rd = RACES[raceKey];
+
+        let str = rand(rd.str[0], rd.str[1]);
+        let int = rand(rd.int[0], rd.int[1]);
+        let cha = rand(rd.cha[0], rd.cha[1]);
+        let hate = rand(0, 100);
+        let name = NAMES[rand(0, NAMES.length - 1)];
+
+        // Enforce Biological Traits to not generate Saboteurs by default
+        if (raceKey === "Sugorian") hate = rand(0, 50);
+        if (raceKey === "Blorg") hate = rand(0, 20);
+        if (raceKey === "Sky-Elf") { int = Math.max(str, cha) + rand(1, 10); }
+        if (raceKey === "Human") { while (str === int && int === cha) { str++; } }
+        if (raceKey === "Beetlegunner") { str = Math.max(str, cha + 1); }
+        if (raceKey === "Giant") { str = int + cha + rand(1, 10); }
+        if (raceKey === "Droid") { name += "-" + rand(1, 99); }
+        if (raceKey === "Robomantoid") { hate = rand(20, 100); }
+        if (raceKey === "Barbitulian") { int = cha; }
+        if (raceKey === "Cheesponge" || raceKey === "Aquasim") { str = Math.min(int, cha) - rand(1, 5); if (str < 1) str = 1; }
+        if (raceKey === "Space-Cat") { cha = Math.max(str, int) + rand(1, 10); }
+        if (raceKey === "Velkhorian") { hate = rand(0, 60); }
+        if (raceKey === "Fungi" || raceKey === "Drakhen") { hate = rand(80, 100); }
+        if (raceKey === "Drakhen") { int = str; }
+        if (raceKey === "Void-Demon") { cha = str + rand(1, 10); hate = rand(0, 10); }
+        if (raceKey === "Oak-Person") { cha = rand(1, 4); }
+        if (raceKey === "Long-Neck" || raceKey === "Squid") { int = str + rand(1, 10); }
+        if (raceKey === "Sodio") { str = Math.max(str, int + 1); }
+
+        const safeRaceName = raceKey.toLowerCase();
+        const maxImgs = rd.images || 12;
+        const portraitVariant = rand(1, maxImgs);
+
+        return {
+            id: id,
+            name: name,
+            race: raceKey,
+            str: str, int: int, cha: cha, hate: hate,
+            exp: ROLES[rand(0, ROLES.length - 1)],
+            portrait: `images/${safeRaceName}_portrait_${portraitVariant}.png`,
+            cost: Math.floor((str + int + cha) * 1.5) + rand(5, 15)
+        };
+    }
+
+    function generateMission() {
+        const types = [
+            { id: "ASSAULT", stat: ["str"], t: 1 },
+            { id: "DIPLOMACY", stat: ["cha"], t: 1 },
+            { id: "RESEARCH", stat: ["int"], t: 1 },
+            { id: "RESCUE", stat: ["str", "int"], t: 2 },
+            { id: "SMUGGLING", stat: ["int", "cha"], t: 2 },
+            { id: "EVACUATION", stat: ["str", "int", "cha"], t: 3 }
+        ];
+        
+        let available = types.filter(t => t.t === 1);
+        if (state.day > 4) available = available.concat(types.filter(t => t.t === 2));
+        if (state.day > 8) available = available.concat(types.filter(t => t.t === 3));
+
+        const m = available[rand(0, available.length - 1)];
+        
+        // STEEPER DIFFICULTY SCALING
+        const targetBase = 45 + Math.floor(state.day * 7.5); 
+
+        let targets = {};
+        m.stat.forEach(s => targets[s] = targetBase + rand(-5, 5));
+
+        return {
+            title: m.id + " OP-" + rand(100, 999),
+            type: m.id,
+            reqs: m.stat,
+            targets: targets,
+            // STEEPER MIN SUCCESS SCALING (Starts at 66, goes up to 95)
+            minReq: Math.min(95, 65 + Math.floor(state.day * 1.2)),
+            reward: 500 + (state.day * 90)
+        };
+    }
+
+    function updateShip() {
+        if (state.day <= 3) state.ship = { name: "Speeder", max: 5, min: 3 };
+        else if (state.day <= 6) state.ship = { name: "Scout", max: 6, min: 4 };
+        else if (state.day <= 10) state.ship = { name: "Gunship", max: 7, min: 4 };
+        else state.ship = { name: "Destroyer", max: 8, min: 5 };
+
+        state.roster = new Array(state.ship.max).fill(null);
+    }
+
+    function startDay() {
+        updateShip();
+        state.mission = generateMission();
+        
+        const poolSize = 6 + Math.floor(state.day / 2);
+        state.pool = [];
+        for(let i=0; i<poolSize; i++) {
+            state.pool.push(generateApplicant(i));
+        }
+
+        updateUI();
+    }
+
+    // ══════════════════════════════════════════════
+    // RENDER LOGIC
+    // ══════════════════════════════════════════════
+
+    function updateUI() {
+        // Dynamic Applicant Count
+        const remainingCount = state.pool.filter(app => !state.roster.find(a => a && a.id === app.id)).length;
+        document.getElementById('pool-title').innerText = `APPLICANTS (${remainingCount})`;
+        
+        // Mission
+        const m = state.mission;
+        let reqHTML = m.reqs.map(r => `<span class="ui-tag outline pixel-notch">${r.toUpperCase()}: ${m.targets[r]}</span>`).join(" ");
+        document.getElementById('ui-mission').innerHTML = `
+            <div class="mission-title">${m.title}</div>
+            <div style="margin-bottom:8px;"><span class="ui-tag pixel-notch">${m.type}</span></div>
+            <div class="mission-detail">${reqHTML}</div>
+            <div class="mission-detail">MIN SUCCESS: <strong>${m.minReq}%</strong></div>
+            <div class="mission-detail" style="margin-top:12px;">REWARD: <strong>${m.reward} CR</strong></div>
+        `;
+
+        // Manual
+        let manualHTML = "";
+        let availableRaces = [];
+        state.pool.forEach(p => { if(!availableRaces.includes(p.race)) availableRaces.push(p.race); });
+        
+        availableRaces.forEach(rKey => {
+            const rd = RACES[rKey];
+            manualHTML += `
+                <div class="manual-entry">
+                    <div class="manual-name">
+                        <img src="${rd.icon}" alt="${rKey}" style="width:24px; height:24px; image-rendering:pixelated; display:inline-block; vertical-align:middle; margin-right:6px;" onerror="this.style.display='none'">
+                        ${rKey}
+                    </div>
+                    <div class="manual-desc">${rd.desc}</div>
+                    <div class="manual-hates">HATES: <strong>${rd.hates.join(", ")}</strong></div>
+                </div>
+            `;
+        });
+        document.getElementById('ui-manual').innerHTML = manualHTML;
+
+        // Roster Slots
+        const rGrid = document.getElementById('roster-grid');
+        rGrid.innerHTML = "";
+        let currentCrewCount = 0;
+        let currentCost = 0;
+
+        for(let i=0; i<state.ship.max; i++) {
+            const slotId = i;
+            const app = state.roster[i];
+            
+            const slotDiv = document.createElement('div');
+            slotDiv.className = "target-slot pixel-notch";
+            slotDiv.dataset.slotId = slotId;
+
+            if (app) {
+                currentCrewCount++;
+                currentCost += app.cost;
+                slotDiv.style.border = "none";
+                slotDiv.style.background = "none";
+                
+                slotDiv.innerHTML = `
+                    <div class="roster-card-mini pixel-notch" onclick="returnToPool(${slotId})">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <img src="${RACES[app.race].icon}" alt="icon" style="width:28px; height:28px; image-rendering:pixelated;" onerror="this.style.display='none'">
+                            <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                                <span style="font-size:18px; font-weight:bold; line-height:1;">${app.name}</span>
+                                <span style="font-size:14px; text-transform:uppercase;">${app.race}</span>
+                            </div>
+                        </div>
+                        <div style="font-size:20px; font-weight:bold;">${app.cost} CR</div>
+                    </div>
+                `;
+            } else {
+                slotDiv.innerHTML = `Slot ${i+1}`;
+            }
+            rGrid.appendChild(slotDiv);
+        }
+
+        document.getElementById('ui-ship-name').innerText = `${state.ship.name} (${currentCrewCount}/${state.ship.max})`;
+        document.getElementById('ui-ship-min').innerText = `MIN: ${state.ship.min}`;
+        document.getElementById('ui-payroll').innerText = currentCost;
+        
+        // Credit display dynamically accounts for current payroll
+        document.getElementById('ui-day').innerText = state.day;
+        document.getElementById('ui-money').innerText = state.money - currentCost;
+
+        const launchBtn = document.getElementById('btn-launch-wrap');
+        if (currentCrewCount > 0) launchBtn.classList.remove('disabled');
+        else launchBtn.classList.add('disabled');
+
+        // Pool
+        const pGrid = document.getElementById('pool-grid');
+        pGrid.innerHTML = "";
+        state.pool.forEach(app => {
+            // Hide if hired
+            if (state.roster.find(a => a && a.id === app.id)) return;
+
+            const rd = RACES[app.race];
+            const hl = (s) => m.reqs.includes(s) ? 'hi-stat' : '';
+
+            const el = document.createElement('div');
+            el.className = "card-stack";
+            el.innerHTML = `
+                <div class="drag-wrapper" data-id="${app.id}">
+                    <div class="card-shadow pixel-staircase"></div>
+                    <div class="card-container pixel-staircase">
+                        <div class="card-content pixel-staircase">
+                            <div class="card-head">
+                                <div class="card-name">${app.name}</div>
+                                <div class="ui-tag pixel-notch">${app.race}</div>
+                            </div>
+                            <div class="avatar-box">
+                                <img src="${app.portrait}" alt="${app.name}" style="width:100%; height:100%; object-fit:cover; image-rendering:pixelated;" onerror="this.style.display='none'; this.parentNode.innerHTML='<span style=\\'font-size:48px; color:#ccc;\\'>?</span>';">
+                            </div>
+                            <div class="card-skills">
+                                <span class="${hl('str')}">STR: ${app.str}</span>
+                                <span class="${hl('int')}">INT: ${app.int}</span>
+                                <span class="${hl('cha')}">CHA: ${app.cha}</span>
+                            </div>
+                            <div class="card-exp">EXP: ${app.exp}</div>
+                            <hr class="card-div">
+                            <div class="card-foot">
+                                <div class="hate-row">
+                                    <div class="hate-lbl">HATE</div>
+                                    <div class="hate-outer pixel-notch"><div class="hate-fill" style="width:${app.hate}%"></div></div>
+                                    <div class="hate-pct">${app.hate}%</div>
+                                </div>
+                                <div class="card-salary">${app.cost} cr</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            pGrid.appendChild(el);
+        });
+
+        bindDragEvents();
+    }
+
+    // ══════════════════════════════════════════════
+    // DRAG & DROP PHYSICS (Pointer Events + Click)
+    // ══════════════════════════════════════════════
+    let activeCard = null;
+    let startX = 0, startY = 0;
+    let placeholder = null;
+    let originalParent = null;
+    let hasMoved = false;
+
+    function bindDragEvents() {
+        const wrappers = document.querySelectorAll('.drag-wrapper');
+
+        wrappers.forEach(card => {
+            card.addEventListener('pointerdown', (e) => {
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                
+                activeCard = card;
+                originalParent = card.parentElement;
+                hasMoved = false;
+                
+                const rect = card.getBoundingClientRect();
+                startX = e.clientX - rect.left;
+                startY = e.clientY - rect.top;
+
+                placeholder = document.createElement('div');
+                placeholder.className = 'card-placeholder pixel-staircase';
+                originalParent.appendChild(placeholder);
+
+                card.style.width = rect.width + 'px';
+                card.style.height = rect.height + 'px';
+                card.style.left = rect.left + 'px';
+                card.style.top = rect.top + 'px';
+                card.style.position = 'fixed';
+                card.style.zIndex = '1000';
+                card.classList.add('dragging');
+                
+                card.setPointerCapture(e.pointerId);
+                e.preventDefault();
+            });
+        });
+    }
+
+    document.addEventListener('pointermove', (e) => {
+        if (!activeCard) return;
+        hasMoved = true;
+        
+        activeCard.style.left = (e.clientX - startX) + 'px';
+        activeCard.style.top = (e.clientY - startY) + 'px';
+
+        const slots = document.querySelectorAll('.target-slot');
+        let hoveringPanel = false;
+
+        // Check if cursor is over the right panel at all
+        const rightPanel = document.getElementById('right-panel');
+        if (rightPanel) {
+            const rpRect = rightPanel.getBoundingClientRect();
+            if (e.clientX > rpRect.left && e.clientX < rpRect.right && e.clientY > rpRect.top && e.clientY < rpRect.bottom) {
+                hoveringPanel = true;
+            }
+        }
+
+        // Clean up all slots first
+        slots.forEach(slot => {
+            slot.classList.remove('drag-over');
+            // If hovering directly over a slot (might be outside the panel bounds technically), also count it
+            if (isOverSlot(e.clientX, e.clientY, slot)) {
+                hoveringPanel = true;
+            }
+        });
+
+        // If hovering anywhere in the right panel zone, highlight the FIRST available slot
+        if (hoveringPanel) {
+            const firstEmptyIndex = state.roster.findIndex(a => a === null);
+            if (firstEmptyIndex !== -1) {
+                const targetSlotEl = document.querySelector(`.target-slot[data-slot-id="${firstEmptyIndex}"]`);
+                if (targetSlotEl) {
+                    targetSlotEl.classList.add('drag-over');
+                }
+            }
+        }
+    });
+
+    document.addEventListener('pointerup', (e) => {
+        if (!activeCard) return;
+
+        const card = activeCard;
+        card.releasePointerCapture(e.pointerId);
+        card.classList.remove('dragging');
+        
+        const slots = document.querySelectorAll('.target-slot');
+        slots.forEach(s => s.classList.remove('drag-over'));
+
+        const appId = parseInt(card.dataset.id);
+
+        if (!hasMoved) {
+            if(placeholder) placeholder.remove();
+            resetCardStyles(card);
+
+            const firstEmptySlot = state.roster.findIndex(a => a === null);
+            if (firstEmptySlot !== -1) {
+                assignToSlot(appId, firstEmptySlot);
+            } else {
+                updateUI();
+            }
+            activeCard = null;
+            return;
+        }
+
+        card.style.transition = 'top 0.15s cubic-bezier(0.2,0,0.3,1), left 0.15s cubic-bezier(0.2,0,0.3,1)';
+
+        let targetX, targetY;
+        let targetSlotId = null;
+
+        let droppedInPanel = false;
+        
+        // Check drop over right panel
+        const rightPanel = document.getElementById('right-panel');
+        if (rightPanel) {
+            const rpRect = rightPanel.getBoundingClientRect();
+            if (e.clientX > rpRect.left && e.clientX < rpRect.right && e.clientY > rpRect.top && e.clientY < rpRect.bottom) {
+                droppedInPanel = true;
+            }
+        }
+        
+        // Check direct slot drop just in case
+        for(let slot of slots) {
+            if (isOverSlot(e.clientX, e.clientY, slot)) {
+                droppedInPanel = true;
+                break;
+            }
+        }
+
+        // If dropped anywhere in the valid zone, snap to the NEXT AVAILABLE empty slot
+        if (droppedInPanel) {
+            const firstEmptyIndex = state.roster.findIndex(a => a === null);
+            if (firstEmptyIndex !== -1) {
+                targetSlotId = firstEmptyIndex;
+                const targetSlotEl = document.querySelector(`.target-slot[data-slot-id="${firstEmptyIndex}"]`);
+                if (targetSlotEl) {
+                    const sRect = targetSlotEl.getBoundingClientRect();
+                    targetX = sRect.left + (sRect.width - card.offsetWidth) / 2;
+                    targetY = sRect.top + (sRect.height - card.offsetHeight) / 2;
+                }
+            }
+        }
+
+        // If it wasn't dropped in the panel OR the panel is completely full
+        if (targetSlotId === null) {
+            const phRect = placeholder.getBoundingClientRect();
+            targetX = phRect.left;
+            targetY = phRect.top;
+        }
+
+        card.style.left = targetX + 'px';
+        card.style.top = targetY + 'px';
+
+        setTimeout(() => {
+            if(placeholder) placeholder.remove();
+            resetCardStyles(card);
+            
+            if (targetSlotId !== null) {
+                assignToSlot(appId, parseInt(targetSlotId));
+            } else {
+                updateUI();
+            }
+            activeCard = null;
+        }, 150);
+    });
+
+    function resetCardStyles(card) {
+        card.style.transition = 'none';
+        card.style.position = 'relative';
+        card.style.left = ''; 
+        card.style.top = '';
+        card.style.width = ''; 
+        card.style.height = '';
+        card.style.zIndex = '10';
+    }
+
+    function isOverSlot(x, y, slot) {
+        const rect = slot.getBoundingClientRect();
+        return (x > rect.left - 20 && x < rect.right + 20 && y > rect.top - 20 && y < rect.bottom + 20);
+    }
+
+    function assignToSlot(appId, slotId) {
+        const app = state.pool.find(a => a.id === appId);
+        if (!app) return;
+        
+        const currentOccupant = state.roster[slotId];
+        const totalCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
+        const replacementCost = currentOccupant ? currentOccupant.cost : 0;
+        
+        if (state.money < (totalCost - replacementCost + app.cost)) {
+            alert("INSUFFICIENT FUNDS. You cannot afford this applicant.");
+            updateUI();
+            return;
+        }
+
+        state.roster[slotId] = app;
+        updateUI();
+    }
+
+    function returnToPool(slotId) {
+        state.roster[slotId] = null;
+        updateUI();
+    }
+
+    // ══════════════════════════════════════════════
+    // RESOLUTION LOGIC (V4.0 Math)
+    // ══════════════════════════════════════════════
+
+    function launchMission() {
+        const hired = state.roster.filter(a => a !== null);
+        if (hired.length === 0) return;
+
+        const cost = hired.reduce((sum, app) => sum + app.cost, 0);
+        state.money -= cost;
+
+        let logs = [];
+        let score = 0;
+
+        // 1. RAW SKILL
+        let statScores = [];
+        state.mission.reqs.forEach(stat => {
+            let sum = hired.reduce((acc, app) => acc + app[stat], 0);
+            let pct = (sum / state.mission.targets[stat]) * 100;
+            statScores.push(pct);
+        });
+        
+        let rawScore = statScores.reduce((a,b)=>a+b, 0) / statScores.length;
+        logs.push(`Base Power Output: ${Math.floor(rawScore)}%`);
+
+        // 2. SHIP EFFICIENCY
+        let effPct = hired.length / state.ship.min;
+        let effMod = 0;
+        if (hired.length === state.ship.max) { effMod = 5; logs.push(`Ship at Max Capacity: +5% Bonus`); }
+        else if (effPct >= 1) { effMod = 0; logs.push(`Ship Minimum Crew Met: 0% Penalty`); }
+        else if (effPct >= 0.7) { effMod = -20; logs.push(`Understaffed (Tier 1): -20% Penalty`); }
+        else if (effPct >= 0.4) { effMod = -40; logs.push(`Understaffed (Tier 2): -40% Penalty`); }
+        else if (effPct >= 0.15) { effMod = -60; logs.push(`Skeleton Crew (Tier 3): -60% Penalty`); }
+        else { effMod = -70; logs.push(`Fatal Understaffing (Tier 4): -70% Penalty`); }
+
+        // 3. CONFLICTS (Mutual Dominance Math)
+        let conflictPenalty = 0;
+        let conflictCount = 0;
+
+        for(let i=0; i<hired.length; i++) {
+            for(let j=i+1; j<hired.length; j++) {
+                let a = hired[i]; let rA = RACES[a.race];
+                let b = hired[j]; let rB = RACES[b.race];
+
+                let aHatesB = rA.hates.includes(b.race) || rA.hates.includes("ALL");
+                let bHatesA = rB.hates.includes(a.race) || rB.hates.includes("ALL");
+
+                if (aHatesB && bHatesA) {
+                    // Mutual Conflict! Compare 2 out of 3 stats
+                    let aWins = 0, bWins = 0;
+                    if(a.str > b.str) aWins++; else if(b.str > a.str) bWins++;
+                    if(a.int > b.int) aWins++; else if(b.int > a.int) bWins++;
+                    if(a.cha > b.cha) aWins++; else if(b.cha > a.cha) bWins++;
+
+                    if (aWins > bWins) {
+                        let pen = 10 + (a.hate/4); conflictPenalty += pen; conflictCount++;
+                        logs.push(`MUTUAL: ${a.race} dominated ${b.race}. -${Math.floor(pen)}%`);
+                    } else if (bWins > aWins) {
+                        let pen = 10 + (b.hate/4); conflictPenalty += pen; conflictCount++;
+                        logs.push(`MUTUAL: ${b.race} dominated ${a.race}. -${Math.floor(pen)}%`);
+                    } else {
+                        let penA = (10 + (a.hate/4))/2;
+                        let penB = (10 + (b.hate/4))/2;
+                        conflictPenalty += (penA + penB); conflictCount++;
+                        logs.push(`MUTUAL DRAW: Bloody stalemate. -${Math.floor(penA+penB)}%`);
+                    }
+                } else if (aHatesB) {
+                    let pen = 10 + (a.hate/4); conflictPenalty += pen; conflictCount++;
+                    logs.push(`CONFLICT: ${a.race} attacked ${b.race}. -${Math.floor(pen)}%`);
+                } else if (bHatesA) {
+                    let pen = 10 + (b.hate/4); conflictPenalty += pen; conflictCount++;
+                    logs.push(`CONFLICT: ${b.race} attacked ${a.race}. -${Math.floor(pen)}%`);
+                }
+            }
+        }
+
+        // 4. SYNERGY
+        let synergy = 0;
+        if (hired.length >= 3 && conflictCount === 0) {
+            synergy = 10;
+            logs.push(`SYNERGY BONUS: Perfect harmony. +10%`);
+        }
+
+        // CALC FINAL
+        score = Math.floor(rawScore + effMod - conflictPenalty + synergy);
+        
+        let overperformance = 0;
+        if (score > 100) {
+            overperformance = Math.min(20, score - 100);
+            score = 100;
+        }
+        if (score < 0) score = 0;
+
+        // 5. PAYOUT VS FINE
+        let earned = 0;
+        let isSuccess = false;
+        
+        if (score >= state.mission.minReq) {
+            isSuccess = true;
+            earned = Math.floor(state.mission.reward * (score/100));
+            if (overperformance > 0) {
+                let bonus = Math.floor(state.mission.reward * (overperformance/100));
+                earned += bonus;
+                logs.push(`OVERPERFORMANCE BONUS: +${bonus} CR`);
+            }
+        } else {
+            let diff = (state.mission.minReq - score) / 100;
+            earned = -Math.floor(state.mission.reward * diff);
+            logs.push(`FINE APPLIED: Mission requirement (${state.mission.minReq}%) not met.`);
+        }
+
+        state.money += earned;
+
+        // Show Modal
+        document.getElementById('res-score').innerText = score + "%";
+        document.getElementById('res-msg').innerText = isSuccess ? "MISSION SUCCESS" : "MISSION FAILED";
+        
+        let logHTML = logs.map(l => `<div>> ${l}</div>`).join('');
+        logHTML += `<br><div>> NET FINANCIAL CHANGE: ${earned >= 0 ? '+'+earned : earned} CR</div>`;
+        document.getElementById('res-log').innerHTML = logHTML;
+
+        document.getElementById('result-overlay').style.display = 'flex';
+
+        if (state.money < 0) state.gameOver = true;
+    }
+
+    function nextDay() {
+        document.getElementById('result-overlay').style.display = 'none';
+        
+        if (state.gameOver) {
+            document.getElementById('res-title').innerText = "SYSTEM LOCKOUT";
+            document.getElementById('res-score').innerText = "BANKRUPT";
+            document.getElementById('res-score').style.color = "red";
+            document.getElementById('res-msg').innerText = "Your career is over.";
+            document.getElementById('res-log').innerHTML = "> Liquidating assets...<br>> Reclaiming organic material...";
+            document.getElementById('modal-btn').innerText = "START OVER";
+            
+            // Override the button to manually reset the game instead of refreshing the page
+            document.getElementById('modal-btn').onclick = function() {
+                // 1. Reset Game Variables
+                state.day = 1;
+                state.money = 800;
+                state.gameOver = false;
+                state.roster = [];
+                state.pool = [];
+                
+                // 2. Reset Modal UI styles back to normal
+                document.getElementById('res-score').style.color = "";
+                document.getElementById('modal-btn').innerText = "CONTINUE";
+                
+                // 3. Restore original button function
+                document.getElementById('modal-btn').onclick = nextDay;
+                
+                // 4. Hide modal and restart
+                document.getElementById('result-overlay').style.display = 'none';
+                startDay();
+            };
+            
+            document.getElementById('result-overlay').style.display = 'flex';
+        } else {
+            state.day++;
+            startDay();
+        }
+    }
+
+    // INIT
+    function init() {
+        startDay();
+    }
+    
+    init();
+
+</script>
 </body>
 </html>
