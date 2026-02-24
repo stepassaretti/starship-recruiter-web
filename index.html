@@ -176,7 +176,8 @@
         .card-div { height: 2px; background-image: linear-gradient(to right, #000 50%, transparent 50%); background-size: 4px 2px; background-repeat: repeat-x; margin: 2px 0; border: none; flex-shrink: 0; }
 
         .card-skills { font-size: 20px; line-height: 1; display: flex; justify-content: space-between; width: 100%; }
-        .hi-stat { font-weight: bold; }
+        /* Underline the required stat */
+        .hi-stat { font-weight: bold; text-decoration: underline; }
         
         .card-exp { font-size: 20px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
@@ -338,21 +339,21 @@
         "Beetlegunner": { icon: "images/beetlegunner_icon.png", images: 12, str: [22,38], int: [4,12], cha: [4,10], hates: ["Sky-Elf", "Droid", "Fungi"], desc: "STR > CHA always." },
         "Giant":        { icon: "images/giant_icon.png",        images: 12, str: [30,50], int: [3,10], cha: [3,10], hates: ["Giant"], desc: "STR > (INT + CHA) always." },
         "Droid":        { icon: "images/droid_icon.png",        images: 12, str: [15,28], int: [15,28], cha: [2,8], hates: ["Sugorian", "Beetlegunner", "Aquasim"], desc: "Name ends with a Number." },
-        "Robomantoid":  { icon: "images/robomantoid_icon.png",  images: 12, str: [28,45], int: [8,18], cha: [5,12], hates: ["Void-Demon", "Sky-Elf", "Sugorian"], desc: "HATE >= 20% always." },
+        "Robomantoid":  { icon: "images/robomantoid_icon.png",  images: 12, str: [28,45], int: [8,18], cha: [5,12], hates: ["Void-Demon", "Sky-Elf", "Sugorian"], desc: "HATE ≥ 20% always." },
         "Barbitulian":  { icon: "images/barbitulian_icon.png",  images: 12, str: [8,20], int: [18,32], cha: [18,32], hates: ["Robomantoid", "Cheesponge"], desc: "INT must equal CHA." },
         "Space-Cat":    { icon: "images/space-cat_icon.png",    images: 12, str: [8,18], int: [12,26], cha: [28,45], hates: ["Long-Neck", "Sugorian", "Void-Demon"], desc: "CHA always highest skill." },
-        "Velkhorian":   { icon: "images/velkhorian_icon.png",   images: 12, str: [18,32], int: [20,34], cha: [22,36], hates: ["Drakhen"], desc: "HATE <= 60%. Avian diplomats." },
+        "Velkhorian":   { icon: "images/velkhorian_icon.png",   images: 12, str: [18,32], int: [20,34], cha: [22,36], hates: ["Drakhen"], desc: "HATE ≤ 60%. Avian diplomats." },
         "Drakhen":      { icon: "images/drakhen_icon.png",      images: 12, str: [45,65], int: [45,65], cha: [25,45], hates: ["ALL"], desc: "Pure evil. Best stats. Hates everyone." },
         "Aquasim":      { icon: "images/aquasim_icon.png",      images: 12, str: [12,28], int: [12,28], cha: [3,10], hates: ["Squid", "Sugorian", "Sodio"], desc: "CHA is always lowest skill." },
         "Void-Demon":   { icon: "images/void-demon_icon.png",   images: 12, str: [8,20], int: [10,24], cha: [20,35], hates: ["NO ONE"], desc: "CHA > STR always. Pacifists." },
-        "Fungi":        { icon: "images/fungi_icon.png",        images: 12, str: [15,28], int: [8,20], cha: [5,15], hates: ["Beetlegunner", "Drakhen", "Aquasim"], desc: "HATE >= 80%. Always screaming." },
+        "Fungi":        { icon: "images/fungi_icon.png",        images: 12, str: [15,28], int: [8,20], cha: [5,15], hates: ["Beetlegunner", "Drakhen", "Aquasim"], desc: "HATE ≥ 80%. Always screaming." },
         "Oak-Person":   { icon: "images/oak-person_icon.png",   images: 12, str: [20,35], int: [15,28], cha: [1,4], hates: ["Drakhen", "Beetlegunner", "Droid", "Robomantoid"], desc: "CHA < 5 always. Slow." },
         "Long-Neck":    { icon: "images/long-neck_icon.png",    images: 12, str: [8,18], int: [18,32], cha: [8,18], hates: ["Giant", "Aquasim", "Fungi", "Robomantoid"], desc: "INT > STR always." },
         "Squid":        { icon: "images/squid_icon.png",        images: 12, str: [8,18], int: [38,58], cha: [10,22], hates: ["Aquasim", "Drakhen", "Beetlegunner", "Giant"], desc: "INT > STR. Highest INT ceiling." },
-        "Sugorian":     { icon: "images/sugorian_icon.png",     images: 12, str: [10,22], int: [10,22], cha: [15,28], hates: ["Human", "Sky-Elf", "Drakhen"], desc: "Bio-luminescent jelly. HATE <= 50%." },
+        "Sugorian":     { icon: "images/sugorian_icon.png",     images: 12, str: [10,22], int: [10,22], cha: [15,28], hates: ["Human", "Sky-Elf", "Drakhen"], desc: "Bio-luminescent jelly. HATE ≤ 50%." },
         "Cheesponge":   { icon: "images/cheesponge_icon.png",   images: 12, str: [3,10], int: [20,32], cha: [18,30], hates: ["Barbitulian", "Drakhen", "Aquasim"], desc: "STR always lowest skill." },
         "Sodio":        { icon: "images/sodio_icon.png",        images: 12, str: [22,38], int: [8,20], cha: [8,18], hates: ["Aquasim", "Cheesponge", "Sugorian"], desc: "Crystalline rock-salt beings. STR > INT." },
-        "Blorg":        { icon: "images/blorg_icon.png",        images: 12, str: [5,15], int: [32,50], cha: [10,22], hates: ["Sugorian", "Fungi", "Drakhen"], desc: "HATE <= 20%." }
+        "Blorg":        { icon: "images/blorg_icon.png",        images: 12, str: [5,15], int: [32,50], cha: [10,22], hates: ["Sugorian", "Fungi", "Drakhen"], desc: "HATE ≤ 20%." }
     };
 
     const NAMES = ["Zog", "Blorp", "Kev", "Lara", "Grom", "Vok", "Nebula", "Starla", "Rex", "Tkt"];
@@ -360,7 +361,7 @@
 
     let state = {
         day: 1,
-        money: 800, // Fixed to match the UI!
+        money: 800, 
         pool: [],
         roster: [], 
         mission: null,
@@ -451,6 +452,7 @@
     }
 
     function updateShip() {
+        // Updated min crew rules: Speeder min 3, Scout min 4
         if (state.day <= 3) state.ship = { name: "Speeder", max: 5, min: 3 };
         else if (state.day <= 6) state.ship = { name: "Scout", max: 6, min: 4 };
         else if (state.day <= 10) state.ship = { name: "Gunship", max: 7, min: 4 };
@@ -483,7 +485,7 @@
         
         // Mission
         const m = state.mission;
-        let reqHTML = m.reqs.map(r => `<span class="ui-tag outline pixel-notch">${r.toUpperCase()}: ${m.targets[r]}</span>`).join(" ");
+        let reqHTML = m.reqs.map(r => `<span class="ui-tag outline pixel-notch">${r.toUpperCase()}:${m.targets[r]}</span>`).join(" ");
         document.getElementById('ui-mission').innerHTML = `
             <div class="mission-title">${m.title}</div>
             <div style="margin-bottom:8px;"><span class="ui-tag pixel-notch">${m.type}</span></div>
@@ -587,9 +589,9 @@
                                 <img src="${app.portrait}" alt="${app.name}" style="width:100%; height:100%; object-fit:cover; image-rendering:pixelated;" onerror="this.style.display='none'; this.parentNode.innerHTML='<span style=\\'font-size:48px; color:#ccc;\\'>?</span>';">
                             </div>
                             <div class="card-skills">
-                                <span class="${hl('str')}">STR: ${app.str}</span>
-                                <span class="${hl('int')}">INT: ${app.int}</span>
-                                <span class="${hl('cha')}">CHA: ${app.cha}</span>
+                                <span class="${hl('str')}">STR:${app.str}</span>
+                                <span class="${hl('int')}">INT:${app.int}</span>
+                                <span class="${hl('cha')}">CHA:${app.cha}</span>
                             </div>
                             <div class="card-exp">EXP: ${app.exp}</div>
                             <hr class="card-div">
