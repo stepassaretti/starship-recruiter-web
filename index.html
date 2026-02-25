@@ -332,67 +332,36 @@
     // GAME DATA & LOGIC (V4.0 Unified Reference)
     // ══════════════════════════════════════════════
 
-    // 1-indexed arrays (index 1..N). Put null at [0] so it lines up with portraitVariant.
+    // 1-indexed arrays (index 1..N). [0] madhye null theva jevha portraitVariant sobat match hoil.
     const NAME_MAP = {
       "Human": [
         null,
-        "Devendrika Ray",           // 1
-        "Kael Ionescu",             // 2
-        "Randy Starkiller",         // 3
-        "Quinn Solemani",           // 4
-        "Tomasz Malik",             // 5
-        "Lucian Vance",             // 6
-        "Rafael Kovacs",            // 7
-        "Elias Moretti",            // 8
-        "Aveline Karim",            // 9
-        "Soren Baptiste",           // 10
-        "Petra Novak",              // 11
-        "Matteo Calder",            // 12
-        "Elara Mendez",             // 13
-        "Nikolai Duarte",           // 14
-        "Adrian Sato",              // 15
-        "Cassian Ward",             // 16
-        "Farid Alami",              // 17
-        "Dario Velasquez",          // 18
-        "Layla Rahman",             // 19
-        "Henrik Solberg",           // 20
-        "Isaac Moreno",             // 21
-        "Iris Bennett",             // 22
-        "Selene Duarte",            // 23
-        "Gordon Lemo",              // 24
-        "Rami Qureshi",             // 25
-        "Andre Baptiste",           // 26
-        "Empress Rosa",             // 27
-        "Camila Torres",            // 28
-        "Lydia Shaw",               // 29
-        "Empress Bianca",           // 30
-        "Theo Grant",               // 31
-        "Lukas Andrade",            // 32
-        "Dominic Hayes",            // 33
-        "Dalo Manimo",              // 34
-        "Hannah Becker",            // 35
-        "Aaron Gallagher",          // 36
-        "Jonas Weber",              // 37
-        "Niklas Berg",              // 38
-        "Ana Velasquez",            // 39
-        "Cassian Moretti",          // 40
-        "Zayed Rahmani",            // 41
-        "Dorian Keane",             // 42
-        "Rafael Duarte",            // 43
-        "Marcus Keane",             // 44
-        "Adrian Malik",             // 45
-        "Victor Calder",            // 46
-        "Henry Vance",              // 47
-        "Daniel Ward",              // 48
-        "Isaac Shaw",               // 49
-        "Grace O’Connell",          // 50
-        "Patrick Hayes",            // 51
-        "Julian Weber"              // 52
+        "Devendrika Ray", "Kael Ionescu", "Randy Starkiller", "Quinn Solemani", "Tomasz Malik", "Lucian Vance", "Rafael Kovacs", "Elias Moretti", "Aveline Karim", "Soren Baptiste", "Petra Novak", "Matteo Calder", "Elara Mendez", "Nikolai Duarte", "Adrian Sato", "Cassian Ward", "Farid Alami", "Dario Velasquez", "Layla Rahman", "Henrik Solberg", "Isaac Moreno", "Iris Bennett", "Selene Duarte", "Gordon Lemo", "Rami Qureshi", "Andre Baptiste", "Empress Rosa", "Camila Torres", "Lydia Shaw", "Empress Bianca", "Theo Grant", "Lukas Andrade", "Dominic Hayes", "Dalo Manimo", "Hannah Becker", "Aaron Gallagher", "Jonas Weber", "Niklas Berg", "Ana Velasquez", "Cassian Moretti", "Zayed Rahmani", "Dorian Keane", "Rafael Duarte", "Marcus Keane", "Adrian Malik", "Victor Calder", "Henry Vance", "Daniel Ward", "Isaac Shaw", "Grace O’Connell", "Patrick Hayes", "Julian Weber"
       ],
-      "Beetlegunner": [], // Add 1..44 here when ready
-      "Barbitulian":  [], // Add 1..54 here when ready
-      "Drakhen":      [], // Add 1..23 here when ready
-      "Aquasim":      []  // Add 1..54 here when ready
+      "Beetlegunner": [
+        null,
+        "Rixo-Zer", "Brak Vorn", "Trok-Xaar", "Zek Kril", "Kral-Dex", "Vrax-Orn", "Drek Xul", "Gorth-Zan", "Krag Vex", "Torg-Xel", "Rax-Korn", "Vek Draal", "Zorn-Xik", "Brix Kaal", "Thrak-Zor", "Krul Varn", "Drox-Kel", "Ralx Zern", "Grix Vaal", "Krot-Xarn", "Bral Kex", "Zor-Kaal", "Trik Vorn", "Krav-Xil", "Drax-Vel", "Rokk Zarn", "Grel-Kor", "Xarn-Dek", "Brox Vek", "Krag-Dor", "Trel-Xan", "Vorn-Krex", "Zrix Vaal", "Drel Krot", "Krul-Zex", "Trog Varn", "Xek-Draal", "Brik Zorn", "Rokk-Vex", "Krag Xorn", "Grot-Dex", "Zarn Krel", "Vrax-Korn", "Trok Vaal"
+      ],
+      "Barbitulian": [
+        null,
+        "Zulvaris", "Xath Merul", "Qorvath Elix", "Sereval Thun", "Valrex Omir", "Thalior Zek", "Vorim Qeth", "Luraxis Vel", "Zathiel Korun", "Meraxis Thal", "Qerun Valis", "Selvar Omek", "Vorun Threx", "Zaleth Miron", "Xeraxis Velun", "Thunor Qelis", "Varith Zel", "Qelaris Morun", "Luthar Vexis", "Zalorin Thun", "Meroth Qal", "Xevorin Lath", "Selvaris Torun", "Qathor Velen", "Zorath Melun", "Threxion Val", "Luraxis Qeth", "Vorin Zelun", "Xerath Omir", "Qelthor Varis", "Zalethor Marn", "Selvor Qarn", "Meraxis Thul", "Zorim Velath", "Qarneth Sol", "Valreth Xorun", "Thulorin Qex", "Xereth Valun", "Lutharis Qel", "Vorath Solun", "Zelvar Threx", "Qeroth Malun", "Tharn Velix", "Zolvar Qeth", "Meraxis Varn", "Qalreth Zor", "Luraxis Threx", "Vorun Qelis", "Xeroth Valar", "Threxil Qarn", "Zaleth Vexor", "Selvar Qorin", "Qorath Melun", "Valreth Zarn"
+      ],
+      "Drakhen": [
+        null,
+        "Zaga Ro-La", "Vrax Kor-Tha", "Selm Dral-Vor", "Krath Zel-Mor", "Threx Val-Ka", "Korvax Dre-Than", "Xev Mor-Ra", "Dral Vek-Tor", "Varn Sel-Keth", "Krag Vo-Dra", "Zorn Mal-Tha", "Tharn Kor-Vex", "Xel Var-Drath", "Morvax Sel-Ra", "Drex Kor-La", "Krath Zel-Vor", "Vrax Thun-Kar", "Selm Dro-Va", "Korvax Zeth-Ra", "Xarn Vel-Tha", "Threx Mor-Kal", "Dral Vor-Xa", "Zaga Threx-La"
+      ],
+      "Aquasim": [
+        null,
+        "Lumaseri", "Veshanari", "Talimor", "Nerisvalu", "Sorameli", "Venathari", "Liorumesi", "Naluvesh", "Terensori", "Meralun", "Valinesu", "Sorimel", "Lumatheri", "Nerivalu", "Mesilor", "Veshtalu", "Seranali", "Lioruveni", "Talumeri", "Nalusori", "Venaliri", "Melisora", "Therinesu", "Lumavesh", "Nalimeru", "Veshlora", "Sorithalu", "Lioruneri", "Meravali", "Talusera", "Nesuluma", "Venameli", "Sorivesh", "Lirinelu", "Mesithera", "Talivenu", "Nalisoru", "Lumamera", "Veshseli", "Seralioru", "Nerithalu", "Melivesu", "Taluneri", "Venasoru", "Liorutali", "Seravali", "Mesinelu", "Nesuvena", "Lumathali", "Veshmeru", "Soriluma", "Nerivali", "Taluseli", "Meranesu"
+      ],
+      "Space-Cat": [
+        null,
+        "Kitty Dude", "Puss Inbootz", "Rob McCat", "Don Whiskerjack", "Sir Meowsalot", "Felinor Vox", "Tabby O’Malley", "Lord Fluffington", "Mewlius Prime", "Scratch Navarro", "Purrlock Holmes", "Admiral Fluffrage", "Baron von Hairball", "Zarpurrion", "Whisker von Doom", "Pawl Atreides", "Catrick Swayze", "Clawdius Max", "Captain Furioso", "Clawrence of Orion", "Jax Whiskers", "Kitty Stardust", "Purrcy Jackson", "Count Scratchula", "Pawblo Escobark", "Feline Dion", "Meowzart", "Major Tabbington"
+      ],
+      "Sky-Elf": [
+        null,
+        "Aeryn Valeth", "Thalion Merev", "Lyrielle Veyra", "Serapha Nymis", "Caelum Orivar", "Vaelor Thyne", "Ilyrion Caelis", "Oryndel Vareth", "Sylvaris Deyne", "Maelor Quineth", "Caedryn Solvar", "Elion Tharis", "Vaelyra Soles", "Nymeris Caeli", "Thalorin Vexar", "Oriel Damaris", "Vaedryn Rval", "Sylion Arhex", "Caelor Nythe", "Valeris Thane", "Oryxiel Dareth", "Theryn Solis", "Aelion Vereth", "Isyra Valenne", "Kaelith Deymor", "Lyssara Thalen", "Vaelor Cyneth", "Tharion Valesk", "Elidryn Soreth", "Myri Caevra", "Vaenys Olara", "Caelum Nyreth", "Oryndel Alis", "Thalion Xereth", "Sylvar Kaelis", "Aeryssa Vireth"
+      ]
     };
 
     function getNameFor(raceKey, portraitVariant) {
