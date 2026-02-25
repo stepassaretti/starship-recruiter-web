@@ -465,7 +465,7 @@
             race: raceKey,
             str: str, int: int, cha: cha, hate: hate,
             exp: ROLES[rand(0, ROLES.length - 1)],
-            portrait: `images/${safeRaceName}_portrait_${portraitVariant}.png`,
+            portrait: `images/${safeRaceName}/${safeRaceName}_portrait_${portraitVariant}.png`,
             cost: Math.floor((str + int + cha) * 1.5) + rand(5, 15)
         };
     }
